@@ -5,7 +5,7 @@ from django.db.models import *
 
 class User(Model):
     user_id = AutoField(primary_key=True)
-    user_name = CharField(max_length=100)
+    user_name = CharField(max_length=100, null=True)
     user_password = CharField(max_length=20)
     user_signature = TextField(null=True)
     user_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
@@ -15,7 +15,7 @@ class User(Model):
     user_created_teams = ManyToManyField('Team', related_name='created_by_users')
     user_joined_teams = ManyToManyField('Team', related_name='joined_by_users')
     # user_created_projects = ManyToManyField(Questionnaire, related_name='created_by_users')
-
+    #
     # def to_json(self):
     #     info = {
     #         "user_id": self.user_id,
