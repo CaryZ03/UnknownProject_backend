@@ -1,7 +1,6 @@
 import json
 
 from django.db.models import *
-from team.models import Team
 
 
 class User(Model):
@@ -13,8 +12,8 @@ class User(Model):
     user_email = EmailField(max_length=50, default=None, blank=True, null=False)
     user_tel = TextField(null=True)
     user_expire_time = IntegerField(null=True, default=30)
-    user_created_teams = ManyToManyField(Team, related_name='created_by_users')
-    user_joined_teams = ManyToManyField(Team, related_name='created_by_users')
+    user_created_teams = ManyToManyField('Team', related_name='created_by_users')
+    user_joined_teams = ManyToManyField('Team', related_name='created_by_users')
     # user_created_projects = ManyToManyField(Questionnaire, related_name='created_by_users')
 
     # def to_json(self):

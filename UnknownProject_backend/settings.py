@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'team',
     'project',
     'document',
+    'channels',
 ]
+
+ASGI_APPLICATION = 'UnknownProject_backend.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
