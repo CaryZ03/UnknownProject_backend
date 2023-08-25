@@ -12,7 +12,7 @@ class Team(Model):
     team_description = TextField(null=True)
     team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     team_tel = TextField(null=True)
-    team_create_time = DateTimeField(null=True)
+    team_create_time = DateTimeField(null=True, auto_now_add=True)
     team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
     team_member = ManyToManyField('TeamMember')
     team_projects = ManyToManyField('project.Project')
@@ -41,7 +41,7 @@ class TeamMember(Model):
         ('member', "成员")
     )
     tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
-    tm_user_join_time = DateTimeField(null=True)
+    tm_user_join_time = DateTimeField(null=True, auto_now_add=True)
 
     class Meta:
         unique_together = ['tm_team_id', 'tm_user_id']
