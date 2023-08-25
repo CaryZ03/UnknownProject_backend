@@ -9,12 +9,13 @@ from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User, UserToken
+from user.models import User
 from random import randint
 from django.core.cache import cache
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
+from .models import Team, TeamMember
 from datetime import datetime
 from django.utils import timezone
 

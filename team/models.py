@@ -10,8 +10,8 @@ class Team(Model):
     team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     team_tel = TextField(null=True)
     team_create_time = DateTimeField(null=True)
-    team_creator = ForeignKey('User', on_delete=SET_NULL, null=True)
-    team_projects = ManyToManyField(Project, null=True)
+    team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
+    team_projects = ManyToManyField(Project)
     # team_chats = ManyToManyField(Chat, )
 
     # def to_json(self):
@@ -29,8 +29,8 @@ class Team(Model):
 
 
 class TeamMember(Model):
-    tm_team_id = ForeignKey('Team', on_delete=CASCADE, null=False)
-    tm_user_id = ForeignKey('User', on_delete=CASCADE, null=False)
+    tm_team_id = ForeignKey(Team, on_delete=CASCADE, null=False)
+    tm_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
     tm_user_nickname = CharField(max_length=100)
     permission_choices = (
         ('creator', "创建者"),
@@ -50,7 +50,7 @@ class Chat(Model):
     chat_signature = TextField(null=True)
     chat_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     chat_tel = TextField(null=True)
-    chat_creator = ForeignKey('User', on_delete=SET_NULL, null=True)
-    chat_admins = ManyToManyField(User, related_name='chat_admins', null=True)
-    chat_members = ManyToManyField(User, related_name='chat_members', null=True)
-    chat_projects = ManyToManyField(Project, null=True)
+    chat_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
+    chat_admins = ManyToManyField(User, related_name='chat_admins')
+    chat_members = ManyToManyField(User, related_name='chat_members')
+    chat_projects = ManyToManyField(Project)
