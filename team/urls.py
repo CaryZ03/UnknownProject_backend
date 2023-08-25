@@ -12,4 +12,7 @@ urlpatterns = [
     path('show_member', show_member, name='show_member'),
     path('show_team', show_team, name='show_team'),
     path('delete_team', delete_team, name='delete_team'),
+    path('invite_link', invite_link, name='invite_link'),
+    path('show_check', show_check, name='show_check'),
+    path('check_member', check_member, name='check_member'),
 ]
