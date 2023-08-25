@@ -16,8 +16,6 @@ class Project(Model):
         ('member', "成员")
     )
     tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
-    #
-    # project_status =
 
     # def to_json(self):
     #     info = {
