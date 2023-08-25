@@ -14,6 +14,7 @@ class Project(Model):
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     project_members = ManyToManyField(TeamMember, related_name='project_members')
     project_complete_date = DateTimeField(null=True)
+    project_editable = BooleanField(default=True)
 
     def to_json(self):
         info = {
@@ -36,6 +37,12 @@ class Requirement(Model):
     requirement_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     requirement_members = ManyToManyField(TeamMember, related_name='requirement_members')
     requirement_complete_time = DateTimeField(null=True)
+    # status_choices = (
+    #     ('', "创建者"),
+    #     ('manager', "管理员"),
+    #     ('member', "成员")
+    # )
+    # tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
 
     def to_json(self):
         info = {

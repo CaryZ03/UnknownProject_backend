@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User
+from user.models import User, UserToken
 from random import randint
 from django.core.cache import cache
 import smtplib
@@ -47,18 +47,13 @@ def send_email_verification(email, code):
         server.sendmail(sender, receiver, msg.as_string())
 
 
-# def create_token(uid, is_admin):
-#     token_key = get_random_secret_key()
-#     expiry_time = now() + timedelta(days=1)
-#     if is_admin:
-#         admin = Admin.objects.get(admin_id=uid)
-#         token = UserToken(key=token_key, is_admin=is_admin, admin=admin, expire_time=expiry_time)
-#     else:
-#         filler = Filler.objects.get(filler_id=uid)
-#         token = UserToken(key=token_key, is_admin=is_admin, filler=filler, expire_time=expiry_time)
-#     token.save()
-#
-#     return token.key
+def create_token(user):
+    token_key = get_random_secret_key()
+    expiry_time = now() + timedelta(minutes=user.user_expiry_time)
+    token = UserToken(key=token_key, user=user, expire_time=expiry_time)
+    token.save()
+
+    return token.key
 
 
 def get_avatar_base64(image):
@@ -78,20 +73,20 @@ def get_avatar_base64(image):
 #     return JsonResponse({'image_url': city.img.url})
 
 
-# def login_required(view_func):
-#     def wrapper(request, *args, **kwargs):
-#         token_key = request.headers.get('Authorization')
-#         token = UserToken.objects.filter(key=token_key).first()
-#         if token and token.filler.filler_is_user:
-#             if token.expire_time < now():
-#                 return JsonResponse({'errno': 1002, 'msg': "登录信息已过期"})
-#             else:
-#                 user = token.filler.filler_user
-#                 return view_func(request, *args, user=user, **kwargs)
-#         else:
-#             return JsonResponse({'errno': 1001, 'msg': "未登录"})
-#
-#     return wrapper
+def login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        token_key = request.headers.get('Authorization')
+        token = UserToken.objects.filter(key=token_key).first()
+        if token:
+            if token.expire_time < now():
+                return JsonResponse({'errno': 1002, 'msg': "登录信息已过期"})
+            else:
+                user = token.user
+                return view_func(request, *args, user=user, **kwargs)
+        else:
+            return JsonResponse({'errno': 1001, 'msg': "未登录"})
+
+    return wrapper
 
 
 # def not_login_required(view_func):
@@ -177,18 +172,15 @@ def user_login(request):
     if User.objects.filter(user_email=email).exists():
         user = User.objects.get(user_email=email)
         if user.user_password == password:
-            # token_key = request.headers.get('Authorization')
-            # if token_key and UserToken.objects.filter(key=token_key).exists():
-            #     token = UserToken.objects.get(key=token_key)
-            #     token.is_admin = False
-            #     token.admin = None
-            #     token.filler = filler
-            #     token.expire_time = now() + timedelta(days=1)
-            #     token.save()
-            # else:
-            #     token_key = create_token(filler.filler_id, False)
-            return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id})
-            # return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
+            token_key = request.headers.get('Authorization')
+            if token_key and UserToken.objects.filter(key=token_key).exists():
+                token = UserToken.objects.get(key=token_key)
+                token.expire_time = now() + timedelta(minutes=user.user_expire_time)
+                token.save()
+                token_key = token.key
+            else:
+                token_key = create_token(user)
+            return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
         else:
             return JsonResponse({'errno': 1041, 'msg': "密码错误"})
     else:
@@ -241,7 +233,7 @@ def reset_password(request):
 @require_http_methods(['POST'])
 def logout(request, user):
     token_key = request.headers.get('Authorization')
-    # UserToken.objects.get(key=token_key).delete()
+    UserToken.objects.get(key=token_key).delete()
     return JsonResponse({'errno': 0, 'msg': "登出成功"})
 
 
