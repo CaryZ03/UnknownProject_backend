@@ -57,10 +57,15 @@ class TeamApplicant(Model):
         unique_together = ['ta_team_id', 'ta_user_id']
 
 
-class Chat(Model):
-    chat_id = AutoField(primary_key=True)
-    chat_name = CharField(max_length=100)
-    chat_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
-    chat_owner = ForeignKey(User, on_delete=SET_NULL, null=True)
-    chat_admins = ManyToManyField(TeamMember, related_name='chat_admins')
-    chat_members = ManyToManyField(TeamMember, related_name='chat_members')
+class GroupChat(Model):
+    gc_id = AutoField(primary_key=True)
+    gc_name = CharField(max_length=100)
+    gc_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    gc_team = ForeignKey(Team, on_delete=CASCADE, null=True)
+    gc_history = ManyToManyField('ChatMessage')
+
+
+class PrivateChat(Model):
+    pc_id = AutoField(primary_key=True)
+    pc_members = ManyToManyField(User)
+    pc_history = ManyToManyField('ChatMessage')
