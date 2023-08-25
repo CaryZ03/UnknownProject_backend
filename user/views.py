@@ -149,7 +149,7 @@ def check_verification_code(request):
 @csrf_exempt
 # @not_login_required
 @require_http_methods(['POST'])
-def user_register_check(request):
+def user_register(request):
     data_json = json.loads(request.body)
     email = data_json.get('email')
     password1 = data_json.get('password1')
@@ -161,7 +161,11 @@ def user_register_check(request):
     elif not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
         return JsonResponse({'errno': 1032, 'msg': "密码不合法"})
     else:
+        new_user = User.objects.create(user_email=email, user_password=password1)
+        new_user.user_name = new_user.user_id
+        new_user.save()
         return JsonResponse({'errno': 0, 'msg': "注册成功"})
+
 
 @csrf_exempt
 # @not_login_required
