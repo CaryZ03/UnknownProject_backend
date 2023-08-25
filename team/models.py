@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import *
 from user.models import User
 from project.models import Project
@@ -12,20 +14,18 @@ class Team(Model):
     team_create_time = DateTimeField(null=True)
     team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
     team_projects = ManyToManyField(Project)
-    # team_chats = ManyToManyField(Chat, )
+    team_chats = ManyToManyField('Chat')
 
-    # def to_json(self):
-    #     info = {
-    #         "team_id": self.team_id,
-    #         "team_name": self.team_name,
-    #         "team_password": self.team_password,
-    #         "team_signature": self.team_signature,
-    #         "team_email": self.team_email,
-    #         "team_company": self.team_company,
-    #         "team_tel": self.team_tel,
-    #         "team_status": self.team_status
-    #     }
-    #     return json.dumps(info)
+    def to_json(self):
+        info = {
+            "team_id": self.team_id,
+            "team_name": self.team_name,
+            "team_description": self.team_description,
+            "team_tel": self.team_tel,
+            "team_create_time": self.team_create_time,
+            "team_creator": self.team_creator,
+        }
+        return json.dumps(info)
 
 
 class TeamMember(Model):
