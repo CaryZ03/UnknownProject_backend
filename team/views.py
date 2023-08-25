@@ -17,7 +17,7 @@ from django.core.cache import cache
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
-from .models import Team, TeamMember
+from .models import Team, TeamMember, TeamApplicant
 from django.utils import timezone
 
 import base64
@@ -181,8 +181,7 @@ def add_member(request, user):
         return JsonResponse({'errno': 2054, 'msg': "添加用户已在该团队内"})
     new_TeamMember = TeamMember.objects.create(tm_team_id=team.team_id, tm_user_id=user_id,
                                                tm_user_nickname=user_change.user_name, tm_user_permissions='member')
-    current_time = now()  # 获取当前时间（本地时区）
-    new_TeamMember.tm_user_join_time = timezone.make_aware(current_time, timezone.get_current_timezone())  # 转换为带有时区的时间
+    new_TeamMember.tm_user_join_time = now()
     new_TeamMember.save()
     user_change.user_joined_teams.add(team)
     # 修改群聊内容
@@ -315,7 +314,7 @@ def invite_link(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def invite_link(request, user):
+def show_check(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
@@ -326,4 +325,49 @@ def invite_link(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user.user_id)
     if team_member.tm_user_permissions == 'member':
         return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
-    return JsonResponse({'errno': 0, 'msg': team.team_key})
+    waiters = team.team_applicants.all()
+    w_info = []
+    for w in waiters:
+        if TeamMember.objects.filter(tm_team_id=team_id, tm_user_id=w.user_id).exists():
+            member_change = TeamApplicant.objects.get(tm_team_id=team_id, tm_user_id=w.user_id)
+            team.team_applicants.remove(member_change)
+            member_change.delete()
+        else:
+            w_info.append(w.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回审核列表成功', 'tm_info': w_info})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def check_member(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    user_id = data_json.get('user_id')
+    choose = data_json.get('choose')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2090, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team.team_id, tm_user_id=user.user_id).exists():
+        return JsonResponse({'errno': 2091, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user.user_id)
+    if team_member.tm_user_permissions == 'member':
+        return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
+    if not User.objects.filter(user_id=user_id).exisis():
+        return JsonResponse({'errno': 2053, 'msg': "该用户不存在"})
+    user_change = User.objects.get(user_id=user_id)
+    if choose == 'yes':
+        new_TeamMember = TeamMember.objects.create(tm_team_id=team.team_id, tm_user_id=user_id,
+                                                   tm_user_nickname=user_change.user_name, tm_user_permissions='member')
+        new_TeamMember.tm_user_join_time = now()
+        new_TeamMember.save()
+        user_change.user_joined_teams.add(team)
+        member_change = TeamApplicant.objects.get(tm_team_id=team_id, tm_user_id=user_id)
+        team.team_applicants.remove(member_change)
+        member_change.delete()
+        return JsonResponse({'errno': 0, 'msg': "审核通过"})
+    else:
+        member_change = TeamApplicant.objects.get(tm_team_id=team_id, tm_user_id=user_id)
+        team.team_applicants.remove(member_change)
+        member_change.delete()
+        return JsonResponse({'errno': 0, 'msg': "审核不通过"})
