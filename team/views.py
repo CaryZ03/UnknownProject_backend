@@ -1,5 +1,7 @@
 import os
 import re
+import secrets
+
 from django.db.models import Q
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
@@ -38,6 +40,7 @@ def create_team(request, user):
     new_team.team_creator = user.user_id
     current_time = datetime.now()  # 获取当前时间（本地时区）
     new_team.team_create_time = timezone.make_aware(current_time, timezone.get_current_timezone())  # 转换为带有时区的时间
+    new_team.team_key = secrets.token_urlsafe(50).replace('#', '')
     if avatar:
         image = ContentFile(base64.b64decode(avatar), name=f"{new_team.team_id}.png")
         new_team.team_avatar.save(image.name, image)

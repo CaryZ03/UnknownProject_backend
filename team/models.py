@@ -6,6 +6,7 @@ from user.models import User
 
 class Team(Model):
     team_id = AutoField(primary_key=True)
+    team_key = CharField(max_length=200, null=True)
     team_name = CharField(max_length=100)
     team_description = TextField(null=True)
     team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
