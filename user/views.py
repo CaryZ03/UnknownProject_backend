@@ -102,7 +102,7 @@ def not_login_required(view_func):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def user_register_check(request):
     data_json = json.loads(request.body)

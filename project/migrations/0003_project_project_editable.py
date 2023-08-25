@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='project_editable',
+            model_name="project",
+            name="project_editable",
             field=models.BooleanField(default=True),
         ),
     ]
