@@ -7,11 +7,12 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
-from datetime import timedelta, datetime
+from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User
+import team.models
+from user.models import User, UserToken
 from random import randint
 from django.core.cache import cache
 import smtplib
@@ -355,20 +356,53 @@ def check_member(request, user):
     if team_member.tm_user_permissions == 'member':
         return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 2053, 'msg': "该用户不存在"})
+        return JsonResponse({'errno': 2093, 'msg': "该用户不存在"})
     user_change = User.objects.get(user_id=user_id)
     if choose == 'yes':
         new_TeamMember = TeamMember.objects.create(tm_team_id=team, tm_user_id=user_change,
                                                    tm_user_nickname=user_change.user_name, tm_user_permissions='member')
-        new_TeamMember.tm_user_join_time = now()
-        new_TeamMember.save()
         user_change.user_joined_teams.add(team)
         member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
+        team.team_member.add(new_TeamMember)
         return JsonResponse({'errno': 0, 'msg': "审核通过"})
     else:
         member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
         return JsonResponse({'errno': 0, 'msg': "审核不通过"})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def join_team_url(request, user):
+    team_key = json.loads(request.body).get('key')
+    print(team_key)
+    if not Team.objects.filter(team_key=team_key).exists():
+        return JsonResponse({'errno': 2100, 'msg': "团队不存在"})
+    team = Team.objects.get(team_key=team_key)
+    if team.team_key_expire_time <= now():
+        return JsonResponse({'errno': 2101, 'msg': "链接已过期"})
+    if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2102, 'msg': "成员已存在"})
+    else:
+        team.team_applicants.add(user)
+    return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def join_team_straight(request, user):
+    team_id = json.loads(request.body).get('team_id')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2110, 'msg': "团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2111, 'msg': "成员已存在"})
+    else:
+        team.team_applicants.add(user)
+    return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
+
+

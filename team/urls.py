@@ -15,4 +15,6 @@ urlpatterns = [
     path('invite_link', invite_link, name='invite_link'),
     path('show_check', show_check, name='show_check'),
     path('check_member', check_member, name='check_member'),
+    path('join_team_url', join_team_url, name='join_team_url'),
+    path('join_team_straight', join_team_straight, name='join_team_straight'),
 ]
