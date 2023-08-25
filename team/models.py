@@ -6,6 +6,8 @@ from user.models import User
 
 class Team(Model):
     team_id = AutoField(primary_key=True)
+    team_key = CharField(max_length=200, null=True)
+    team_key_expire_time = DateTimeField(null=True)
     team_name = CharField(max_length=100)
     team_description = TextField(null=True)
     team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
@@ -15,6 +17,7 @@ class Team(Model):
     team_member = ManyToManyField('TeamMember')
     team_projects = ManyToManyField('project.Project')
     team_chats = ManyToManyField('Chat')
+    team_applicants = ManyToManyField('TeamApplicant')
 
     def to_json(self):
         info = {
@@ -39,6 +42,16 @@ class TeamMember(Model):
     )
     tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
     tm_user_join_time = DateTimeField(null=True)
+
+    class Meta:
+        unique_together = ['tm_team_id', 'tm_user_id']
+
+
+class TeamApplicant(Model):
+    ta_team_id = ForeignKey(Team, on_delete=CASCADE, null=False)
+    ta_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
+    ta_apply_time = DateTimeField(null=True)
+    ta_message = CharField(max_length=100)
 
     class Meta:
         unique_together = ['tm_team_id', 'tm_user_id']
