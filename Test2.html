@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room - User 2</title>
+</head>
+<body>
+    <h1>User 2</h1>
+    <textarea id="chat-log" cols="50" rows="10"></textarea><br>
+    <input id="chat-message-input" type="text" size="50">
+    <button id="chat-message-submit">Send</button>
+
+    <script>
+        const chatSocket = new WebSocket(
+            'ws://127.0.0.1:8000/ws/chat/1/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n');
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
+</body>
+</html>
