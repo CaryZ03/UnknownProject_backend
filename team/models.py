@@ -54,7 +54,7 @@ class TeamApplicant(Model):
     ta_message = CharField(max_length=100)
 
     class Meta:
-        unique_together = ['tm_team_id', 'tm_user_id']
+        unique_together = ['ta_team_id', 'ta_user_id']
 
 
 class Chat(Model):
