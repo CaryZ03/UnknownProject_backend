@@ -49,8 +49,8 @@ def send_email_verification(email, code):
 
 def create_token(user):
     token_key = get_random_secret_key()
-    expiry_time = now() + timedelta(minutes=user.user_expiry_time)
-    token = UserToken(key=token_key, user=user, expire_time=expiry_time)
+    expire_time = now() + timedelta(minutes=user.user_expire_time)
+    token = UserToken(key=token_key, user=user, expire_time=expire_time)
     token.save()
 
     return token.key
