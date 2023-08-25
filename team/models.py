@@ -2,7 +2,6 @@ import json
 
 from django.db.models import *
 from user.models import User
-from project.models import Project
 
 
 class Team(Model):
@@ -14,7 +13,7 @@ class Team(Model):
     team_create_time = DateTimeField(null=True)
     team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
     team_member = ManyToManyField('TeamMember')
-    team_projects = ManyToManyField(Project)
+    team_projects = ManyToManyField('project.Project')
     team_chats = ManyToManyField('Chat')
 
     def to_json(self):

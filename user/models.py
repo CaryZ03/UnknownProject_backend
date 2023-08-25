@@ -6,6 +6,7 @@ from django.db.models import *
 class User(Model):
     user_id = AutoField(primary_key=True)
     user_name = CharField(max_length=100, null=True)
+    user_real_name = CharField(max_length=100, null=True)
     user_password = CharField(max_length=20)
     user_signature = TextField(null=True)
     user_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
@@ -22,6 +23,7 @@ class User(Model):
         info = {
             "user_id": self.user_id,
             "user_name": self.user_name,
+            "user_real_name": self.user_real_name,
             "user_signature": self.user_signature,
             "user_email": self.user_email,
             "user_tel": self.user_tel

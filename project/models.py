@@ -10,7 +10,7 @@ class Project(Model):
     project_name = CharField(max_length=100)
     project_description = TextField(null=True)
     project_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
-    project_create_time = DateTimeField(auto_now_add=True)
+    project_create_time = DateTimeField(auto_now_add=True, null=True)
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     project_members = ManyToManyField(TeamMember, related_name='project_members')
     project_complete_date = DateTimeField(null=True)
