@@ -372,13 +372,23 @@ def deploy_test(request):
 
 
 @csrf_exempt
-# @login_required
-@require_http_methods(['GET'])
-def check_profile(request, user):
-    user_info = user.to_json()
-    user_avatar = None
-    if user.user_avatar:
-        user_avatar = get_avatar_base64(user.user_avatar)
-    return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'user_info': user_info, 'user_avatar': user_avatar})
+@require_http_methods(['POST'])
+def check_profile(request):
+    data_json = json.loads(request.body)
+    user_id = data_json.get('user_id')
+    if not User.objects.filter(user_id=user_id).exists():
+        return JsonResponse({'errno': 1120, 'msg': '该用户不存在'})
+    user = User.objects.get(user_id=user_id)
+    if user.user_visible:
+        user_info = user.to_json()
+        user_avatar = None
+        if user.user_avatar:
+            user_avatar = get_avatar_base64(user.user_avatar)
+        return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'user_info': user_info, 'user_avatar': user_avatar})
+    else:
+        user_avatar = None
+        if user.user_avatar:
+            user_avatar = get_avatar_base64(user.user_avatar)
+        return JsonResponse({'errno': 0, 'msg': '返回部分用户信息成功', 'user_name': user.user_name, 'user_avatar': user_avatar, 'user_signature': user.user_signature})
 
 
