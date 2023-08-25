@@ -89,13 +89,16 @@ def login_required(view_func):
     return wrapper
 
 
-# def not_login_required(view_func):
-#     def wrapper(request, *args, **kwargs):
-#         if not request.session.items():
-#             return view_func(request, *args, **kwargs)
-#         else:
-#             return JsonResponse({'errno': 1002, 'msg': "已登录"})
-#     return wrapper
+def not_login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        token_key = request.headers.get('Authorization')
+        token = UserToken.objects.filter(key=token_key).first()
+        if not token:
+            return view_func(request, *args, **kwargs)
+        else:
+            return JsonResponse({'errno': 1002, 'msg': "已有用户登录"})
+
+    return wrapper
 
 
 @csrf_exempt
@@ -163,7 +166,7 @@ def user_register(request):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def user_login(request):
     data_json = json.loads(request.body)
