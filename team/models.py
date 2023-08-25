@@ -17,6 +17,7 @@ class Team(Model):
     team_member = ManyToManyField('TeamMember')
     team_projects = ManyToManyField('project.Project')
     team_chats = ManyToManyField('Chat')
+    team_applicants = ManyToManyField('TeamApplicant')
 
     def to_json(self):
         info = {
@@ -41,6 +42,16 @@ class TeamMember(Model):
     )
     tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
     tm_user_join_time = DateTimeField(null=True)
+
+    class Meta:
+        unique_together = ['tm_team_id', 'tm_user_id']
+
+
+class TeamApplicant(Model):
+    ta_team_id = ForeignKey(Team, on_delete=CASCADE, null=False)
+    ta_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
+    ta_apply_time = DateTimeField(null=True)
+    ta_message = CharField(max_length=100)
 
     class Meta:
         unique_together = ['tm_team_id', 'tm_user_id']
