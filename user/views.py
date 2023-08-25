@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User, Filler, UserToken
+from user.models import User
 from random import randint
 from django.core.cache import cache
 import smtplib
@@ -241,7 +241,7 @@ def reset_password(request):
 @require_http_methods(['POST'])
 def logout(request, user):
     token_key = request.headers.get('Authorization')
-    UserToken.objects.get(key=token_key).delete()
+    # UserToken.objects.get(key=token_key).delete()
     return JsonResponse({'errno': 0, 'msg': "登出成功"})
 
 

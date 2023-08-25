@@ -1,6 +1,5 @@
 from django.db.models import *
 from user.models import User
-from team.models import Team
 
 
 class Project(Model):
@@ -9,8 +8,8 @@ class Project(Model):
     project_description = TextField(null=True)
     project_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     project_create_time = DateTimeField(null=True)
-    project_creator = ForeignKey('User', on_delete=SET_NULL, null=True)
-    project_members = ManyToManyField(User, related_name='project_members', null=True)
+    project_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
+    project_members = ManyToManyField(User, related_name='project_members')
     permission_choices = (
         ('creator', "创建者"),
         ('manager', "管理员"),
