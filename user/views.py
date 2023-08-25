@@ -256,7 +256,7 @@ def cancel_account(request, user):
 @csrf_exempt
 # @login_required
 @require_http_methods(['GET'])
-def check_profile(request, user):
+def check_profile_self(request, user):
     user_info = user.to_json()
     user_avatar = None
     if user.user_avatar:
@@ -294,7 +294,7 @@ def change_profile(request, user):
 @csrf_exempt
 # @login_required
 @require_http_methods(['GET'])
-def check_created_team_list(request, user, tm_list_type):
+def check_team_list(request, user, tm_list_type):
     if tm_list_type == 'created':
         teams = user.user_created_teams.all()
     elif tm_list_type == 'managed':
@@ -369,4 +369,16 @@ def upload_email(request, user):
 @require_http_methods(['POST'])
 def deploy_test(request):
     return JsonResponse({'errno': 0, 'ver': "8", 'cur_time': now()})
+
+
+@csrf_exempt
+# @login_required
+@require_http_methods(['GET'])
+def check_profile(request, user):
+    user_info = user.to_json()
+    user_avatar = None
+    if user.user_avatar:
+        user_avatar = get_avatar_base64(user.user_avatar)
+    return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'user_info': user_info, 'user_avatar': user_avatar})
+
 

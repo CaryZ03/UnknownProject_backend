@@ -44,6 +44,7 @@ def create_team(request, user):
     new_team.save()
     new_TeamMember = TeamMember.objects.create(tm_team_id=new_team.team_id, tm_user_id=user.user_id, tm_user_nickname=user.user_name, tm_user_permissions='creator', tm_user_join_time=new_team.team_create_time)
     user.user_created_teams.add(new_team)
+    new_team.team_member.add(user)
     # 添加群聊
     return JsonResponse({'errno': 0, 'msg': "团队创建成功"})
 
@@ -119,7 +120,8 @@ def add_manager(request, user):
     team_member_change = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user_id)
     if team_member_change.tm_user_permissions == 'create' or team_member_change.tm_user_permissions == 'manager':
         return JsonResponse({'errno': 2035, 'msg': "添加用户已有管理员权限"})
-    # 修改user里内容
+    user_change.user_managed_teams.add(team)
+    user_change.user_joined_teams.remove(team)
     team_member.tm_user_permissions = 'manager'
     team_member_change.save()
     return JsonResponse({'errno': 0, 'msg': "添加管理员成功"})
@@ -150,7 +152,8 @@ def delete_manager(request, user):
         return JsonResponse({'errno': 2045, 'msg': "该用户为团队创建者，不可取消其管理员权限"})
     if team_member_change.tm_user_permissions == 'member':
         return JsonResponse({'errno': 2046, 'msg': "该用户无管理员权限"})
-    # 修改用户里内容
+    user_change.user_managed_teams.remove(team)
+    user_change.user_joined_teams.add(team)
     team_member.tm_user_permissions = 'member'
     team_member_change.save()
     return JsonResponse({'errno': 0, 'msg': "删除管理员成功"})
@@ -181,7 +184,7 @@ def add_member(request, user):
     current_time = datetime.now()  # 获取当前时间（本地时区）
     new_TeamMember.tm_user_join_time = timezone.make_aware(current_time, timezone.get_current_timezone())  # 转换为带有时区的时间
     new_TeamMember.save()
-    # 修改用户里内容
+    user_change.user_joined_teams.add(team)
     # 修改群聊内容
     return JsonResponse({'errno': 0, 'msg': "添加用户成功"})
 
@@ -199,17 +202,32 @@ def delete_member(request, user):
     if not TeamMember.objects.filter(tm_team_id=team.team_id, tm_user_id=user.user_id).exists():
         return JsonResponse({'errno': 2061, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user.user_id)
-    if team_member.tm_user_permissions != 'creator' and team_member.tm_user_permissions != 'manager':
+    if team_member.tm_user_permissions == 'member':
         return JsonResponse({'errno': 2062, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exisis():
         return JsonResponse({'errno': 2063, 'msg': "该用户不存在"})
-    user_change = User.objects.get(user_id=user_id)
     if not TeamMember.objects.filter(tm_team_id=team.team_id, tm_user_id=user_id).exists():
         return JsonResponse({'errno': 2064, 'msg': "删除用户不在该团队内"})
-    team_member.delete()
-    # 修改user内容
+    user_change = User.objects.get(user_id=user_id)
+    team_member_change = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user_id)
+    if team_member_change.tm_user_permissions == 'creator':
+        return JsonResponse({'errno': 2065, 'msg': "创建者无法踢出团队"})
+    elif team_member_change.tm_user_permissions == 'manager':
+        if team_member.tm_user_permissions != 'creator':
+            return JsonResponse({'errno': 2062, 'msg': "用户权限不足"})
+        else:
+            team_member_change.delete()
+            user_change.user_managed_teams.add(team)
+            return JsonResponse({'errno': 0, 'msg': "删除用户成功"})
+    else:
+        if team_member.tm_user_permissions == 'member':
+            return JsonResponse({'errno': 2062, 'msg': "用户权限不足"})
+        else:
+            team_member_change.delete()
+            user_change.user_joined_teams.add(team)
+            return JsonResponse({'errno': 0, 'msg': "删除用户成功"})
     # 修改群聊内容
-    return JsonResponse({'errno': 0, 'msg': "删除用户成功"})
+
 
 
 @csrf_exempt
@@ -232,9 +250,8 @@ def show_member(request, user):
 
 
 @csrf_exempt
-# @login_required
 @require_http_methods(['POST'])
-def show_team(request, team):
+def show_team(request):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
@@ -256,3 +273,23 @@ def get_avatar_base64(image):
         base64_encoded = base64.b64encode(image_data).decode('utf-8')
     # 'data:image/' + ext + ';base64,' +
     return base64_encoded
+
+
+@csrf_exempt
+# @login_required
+@require_http_methods(['POST'])
+def delete_team(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2090, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team.team_id, tm_user_id=user.user_id).exists():
+        return JsonResponse({'errno': 2091, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team.team_id, tm_user_id=user.user_id)
+    if team_member.tm_user_permissions != 'creator':
+        return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
+    team.delete()
+    return JsonResponse({'errno': 0, 'msg': "删除团队成功"})
+
+

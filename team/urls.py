@@ -11,4 +11,5 @@ urlpatterns = [
     path('delete_member', delete_member, name='delete_member'),
     path('show_member', show_member, name='show_member'),
     path('show_team', show_team, name='show_team'),
+    path('delete_team', delete_team, name='delete_team'),
 ]
