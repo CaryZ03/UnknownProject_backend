@@ -18,15 +18,4 @@ class Notification(Model):
     notification_content = TextField(null=True)
     notification_create_time = DateTimeField(auto_now_add=True)
     notification_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
-    notification_editors = ManyToManyField('Editor', related_name='notification_members')
-
-    def to_json(self):
-        info = {
-            "notification_id": self.notification_id,
-            "notification_name": self.notification_name,
-            "notification_create_time": self.notification_create_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "notification_creator": self.notification_creator.tm_user_nickname if self.notification_creator else None,
-            "notification_complete_date": self.notification_complete_date.strftime("%Y-%m-%d %H:%M:%S")
-            if self.notification_complete_date else None,
-        }
-        return json.dumps(info)
+    notification_receiver = ManyToManyField(User)
