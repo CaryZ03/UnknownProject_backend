@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User, Filler, UserToken
+from user.models import User
 from random import randint
 from django.core.cache import cache
 import smtplib
@@ -149,7 +149,7 @@ def check_verification_code(request):
 @csrf_exempt
 # @not_login_required
 @require_http_methods(['POST'])
-def user_register_check(request):
+def user_register(request):
     data_json = json.loads(request.body)
     email = data_json.get('email')
     password1 = data_json.get('password1')
@@ -161,7 +161,11 @@ def user_register_check(request):
     elif not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
         return JsonResponse({'errno': 1032, 'msg': "密码不合法"})
     else:
+        new_user = User.objects.create(user_email=email, user_password=password1)
+        new_user.user_name = new_user.user_id
+        new_user.save()
         return JsonResponse({'errno': 0, 'msg': "注册成功"})
+
 
 @csrf_exempt
 # @not_login_required
@@ -237,7 +241,7 @@ def reset_password(request):
 @require_http_methods(['POST'])
 def logout(request, user):
     token_key = request.headers.get('Authorization')
-    UserToken.objects.get(key=token_key).delete()
+    # UserToken.objects.get(key=token_key).delete()
     return JsonResponse({'errno': 0, 'msg': "登出成功"})
 
 
@@ -252,7 +256,7 @@ def cancel_account(request, user):
 @csrf_exempt
 # @login_required
 @require_http_methods(['GET'])
-def check_profile(request, user):
+def check_profile_self(request, user):
     user_info = user.to_json()
     user_avatar = None
     if user.user_avatar:
@@ -287,26 +291,22 @@ def change_profile(request, user):
         return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
 
 
-# @csrf_exempt
-# # @login_required
-# @require_http_methods(['GET'])
-# def check_created_team_list(request, user, qn_list_type):
-#     if qn_list_type == 'created' or qn_list_type == 'deleted':
-#         questionnaires = user.user_created_questionnaires.all()
-#     elif qn_list_type == 'filled':
-#         questionnaires = user.user_filled_questionnaires.all()
-#     else:
-#         return JsonResponse({'errno': 1121, 'msg': '未指定问卷列表'})
-#     qn_info = []
-#     if qn_list_type == 'deleted':
-#         for qn in questionnaires:
-#             if qn.qn_status == 'deleted':
-#                 qn_info.append(qn.to_json())
-#     else:
-#         for qn in questionnaires:
-#             if qn.qn_status != 'deleted':
-#                 qn_info.append(qn.to_json())
-#     return JsonResponse({'errno': 0, 'msg': '返回问卷列表成功', 'qn_info': qn_info})
+@csrf_exempt
+# @login_required
+@require_http_methods(['GET'])
+def check_team_list(request, user, tm_list_type):
+    if tm_list_type == 'created':
+        teams = user.user_created_teams.all()
+    elif tm_list_type == 'managed':
+        teams = user.user_managed_teams.all()
+    elif tm_list_type == 'joined':
+        teams = user.user_joined_teams.all()
+    else:
+        return JsonResponse({'errno': 1110, 'msg': '未指定团队列表'})
+    tm_info = []
+    for tm in teams:
+        tm_info.append(tm.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回问卷列表成功', 'tm_info': tm_info})
 
 
 @csrf_exempt
@@ -369,4 +369,26 @@ def upload_email(request, user):
 @require_http_methods(['POST'])
 def deploy_test(request):
     return JsonResponse({'errno': 0, 'ver': "8", 'cur_time': now()})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def check_profile(request):
+    data_json = json.loads(request.body)
+    user_id = data_json.get('user_id')
+    if not User.objects.filter(user_id=user_id).exists():
+        return JsonResponse({'errno': 1120, 'msg': '该用户不存在'})
+    user = User.objects.get(user_id=user_id)
+    if user.user_visible:
+        user_info = user.to_json()
+        user_avatar = None
+        if user.user_avatar:
+            user_avatar = get_avatar_base64(user.user_avatar)
+        return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'user_info': user_info, 'user_avatar': user_avatar})
+    else:
+        user_avatar = None
+        if user.user_avatar:
+            user_avatar = get_avatar_base64(user.user_avatar)
+        return JsonResponse({'errno': 0, 'msg': '返回部分用户信息成功', 'user_name': user.user_name, 'user_avatar': user_avatar, 'user_signature': user.user_signature})
+
 
