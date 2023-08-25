@@ -137,12 +137,10 @@ def send_verification_code(request):
 def check_verification_code(request):
     data_json = json.loads(request.body)
     email = data_json.get('email')
-    verification_code = data_json.get['verification_code']
-    print(verification_code)
+    verification_code = data_json.get('verification_code')
     code = None
     if verification_code:
         code = cache.get(email)
-        print(code)
     if code and code == verification_code:
         return JsonResponse({'errno': 0, 'msg': '验证码正确'})
     return JsonResponse({'errno': 1030, 'msg': '验证码错误'})
