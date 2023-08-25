@@ -1,5 +1,8 @@
+import json
+
 from django.db.models import *
 from user.models import User
+from team.models import TeamMember
 
 
 class Project(Model):
@@ -7,25 +10,41 @@ class Project(Model):
     project_name = CharField(max_length=100)
     project_description = TextField(null=True)
     project_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
-    project_create_time = DateTimeField(null=True)
-    project_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
-    project_members = ManyToManyField(User, related_name='project_members')
-    permission_choices = (
-        ('creator', "创建者"),
-        ('manager', "管理员"),
-        ('member', "成员")
-    )
-    tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
+    project_create_time = DateTimeField(auto_now_add=True)
+    project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
+    project_members = ManyToManyField(TeamMember, related_name='project_members')
+    project_complete_date = DateTimeField(null=True)
 
-    # def to_json(self):
-    #     info = {
-    #         "project_id": self.project_id,
-    #         "project_name": self.project_name,
-    #         "project_password": self.project_password,
-    #         "project_signature": self.project_signature,
-    #         "project_email": self.project_email,
-    #         "project_company": self.project_company,
-    #         "project_tel": self.project_tel,
-    #         "project_status": self.project_status
-    #     }
-    #     return json.dumps(info)
+    def to_json(self):
+        info = {
+            "project_id": self.project_id,
+            "project_name": self.project_name,
+            "project_description": self.project_description,
+            "project_create_time": self.project_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "project_creator": self.project_creator.tm_user_nickname if self.project_creator else None,
+            "project_complete_date": self.project_complete_date.strftime("%Y-%m-%d %H:%M:%S")
+            if self.project_complete_date else None,
+        }
+        return json.dumps(info)
+
+
+class Requirement(Model):
+    requirement_id = AutoField(primary_key=True)
+    requirement_name = CharField(max_length=100)
+    requirement_description = TextField(null=True)
+    requirement_create_time = DateTimeField(auto_now_add=True)
+    requirement_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
+    requirement_members = ManyToManyField(TeamMember, related_name='requirement_members')
+    requirement_complete_time = DateTimeField(null=True)
+
+    def to_json(self):
+        info = {
+            "requirement_id": self.requirement_id,
+            "requirement_name": self.requirement_name,
+            "requirement_description": self.requirement_description,
+            "requirement_create_time": self.requirement_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "requirement_creator": self.requirement_creator.tm_user_nickname if self.requirement_creator else None,
+            "requirement_complete_date": self.requirement_complete_time.strftime("%Y-%m-%d %H:%M:%S")
+            if self.requirement_complete_time else None,
+        }
+        return json.dumps(info)
