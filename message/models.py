@@ -19,7 +19,6 @@ class Notification(Model):
     notification_create_time = DateTimeField(auto_now_add=True)
     notification_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     notification_editors = ManyToManyField('Editor', related_name='notification_members')
-    notification_complete_date = DateTimeField(null=True)
 
     def to_json(self):
         info = {
