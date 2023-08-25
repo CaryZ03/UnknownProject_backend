@@ -291,26 +291,22 @@ def change_profile(request, user):
         return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
 
 
-# @csrf_exempt
-# # @login_required
-# @require_http_methods(['GET'])
-# def check_created_team_list(request, user, qn_list_type):
-#     if qn_list_type == 'created' or qn_list_type == 'deleted':
-#         questionnaires = user.user_created_questionnaires.all()
-#     elif qn_list_type == 'filled':
-#         questionnaires = user.user_filled_questionnaires.all()
-#     else:
-#         return JsonResponse({'errno': 1121, 'msg': '未指定问卷列表'})
-#     qn_info = []
-#     if qn_list_type == 'deleted':
-#         for qn in questionnaires:
-#             if qn.qn_status == 'deleted':
-#                 qn_info.append(qn.to_json())
-#     else:
-#         for qn in questionnaires:
-#             if qn.qn_status != 'deleted':
-#                 qn_info.append(qn.to_json())
-#     return JsonResponse({'errno': 0, 'msg': '返回问卷列表成功', 'qn_info': qn_info})
+@csrf_exempt
+# @login_required
+@require_http_methods(['GET'])
+def check_created_team_list(request, user, tm_list_type):
+    if tm_list_type == 'created':
+        teams = user.user_created_teams.all()
+    elif tm_list_type == 'managed':
+        teams = user.user_managed_teams.all()
+    elif tm_list_type == 'joined':
+        teams = user.user_joined_teams.all()
+    else:
+        return JsonResponse({'errno': 1110, 'msg': '未指定团队列表'})
+    tm_info = []
+    for tm in teams:
+        tm_info.append(tm.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回问卷列表成功', 'tm_info': tm_info})
 
 
 @csrf_exempt

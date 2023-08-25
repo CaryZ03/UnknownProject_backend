@@ -43,7 +43,7 @@ def create_team(request, user):
         new_team.team_avatar.save(image.name, image)
     new_team.save()
     new_TeamMember = TeamMember.objects.create(tm_team_id=new_team.team_id, tm_user_id=user.user_id, tm_user_nickname=user.user_name, tm_user_permissions='creator', tm_user_join_time=new_team.team_create_time)
-    # user 中添加他创建该团队
+    user.user_created_teams.add(new_team)
     # 添加群聊
     return JsonResponse({'errno': 0, 'msg': "团队创建成功"})
 
