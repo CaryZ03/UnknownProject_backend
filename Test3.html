@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Collaborative Editor1</title>
+</head>
+<body>
+    <textarea id="editor" style="width: 100%; height: 300px;"></textarea>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const documentId = 'test_document'; // You can replace this with your document ID
+
+        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/document/${documentId}/`);
+
+        // WebSocket connection opened
+        socket.addEventListener('open', (event) => {
+            console.log('WebSocket connection opened');
+        });
+
+        // WebSocket received a message
+        socket.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+            const content = data.content;
+            editor.value = content;
+            console.log('Received:', content);
+        });
+
+        // Send textarea content to server on input change
+        editor.addEventListener('input', (event) => {
+            const content = editor.value;
+            const message = JSON.stringify({ content });
+            socket.send(message);
+            console.log('Sent:', content);
+        });
+
+        // WebSocket connection closed
+        socket.addEventListener('close', (event) => {
+            console.log('WebSocket connection closed');
+        });
+    </script>
+</body>
+</html>
