@@ -34,8 +34,16 @@ class Project(Model):
             "project_description": self.project_description,
             "project_create_time": self.project_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "project_creator": self.project_creator.tm_user_nickname if self.project_creator else None,
-            "project_complete_date": self.project_complete_date.strftime("%Y-%m-%d %H:%M:%S")
-            if self.project_complete_date else None,
+            "project_estimated_start_time": self.project_estimated_start_time.strftime("%Y-%m-%d %H:%M:%S")
+            if self.project_estimated_start_time else None,
+            "project_estimated_end_time": self.project_estimated_end_time.strftime("%Y-%m-%d %H:%M:%S")
+            if self.project_estimated_end_time else None,
+            "project_start_time": self.project_start_time.strftime("%Y-%m-%d %H:%M:%S")
+            if self.project_start_time else None,
+            "project_end_time": self.project_end_time.strftime("%Y-%m-%d %H:%M:%S")
+            if self.project_end_time else None,
+            "project_team": self.project_team.team_id,
+            "project_editable": self.project_editable,
         }
         return json.dumps(info)
 

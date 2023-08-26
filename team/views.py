@@ -416,3 +416,21 @@ def join_team_straight(request, user):
     return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
 
 
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_nickname(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    nickname = data_json.get('nickname')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2150, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2151, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
+    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+        return JsonResponse({'errno': 2152, 'msg': "昵称不合法"})
+    team_member.tm_user_nickname = nickname
+    team_member.save()
+    return JsonResponse({'errno': 0, 'msg': "修改团队昵称成功"})
