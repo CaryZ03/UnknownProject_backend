@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'project',
     'document',
     'channels',
+    'message',
 ]
 
 ASGI_APPLICATION = 'UnknownProject_backend.asgi.application'
