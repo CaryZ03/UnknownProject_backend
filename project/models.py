@@ -14,7 +14,7 @@ class Project(Model):
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     project_complete_date = DateTimeField(null=True)
     project_editable = BooleanField(default=True)
-    project_team = ForeignKey(Team, on_delete=CASCADE, null=False)
+    project_team = ForeignKey(Team, on_delete=CASCADE, null=True)
 
     def to_json(self):
         info = {

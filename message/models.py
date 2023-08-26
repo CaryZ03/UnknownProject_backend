@@ -7,12 +7,12 @@ from team.models import TeamMember
 
 class ChatMessage(Model):
     cm_id = AutoField(primary_key=True)
-    cm_from = ForeignKey(User, on_delete=SET_NULL)
+    cm_from = ForeignKey(User, on_delete=SET_NULL, null=True)
     cm_content = TextField()
     cm_create_time = DateTimeField(auto_now_add=True)
     cm_isat = BooleanField(default=False)
     cm_at_all = BooleanField(default=False)
-    cm_at = ManyToManyField(TeamMember, on_delete=SET_NULL)
+    cm_at = ManyToManyField(TeamMember)
 
 
 
