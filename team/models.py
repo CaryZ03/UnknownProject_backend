@@ -16,7 +16,7 @@ class Team(Model):
     team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
     team_member = ManyToManyField('TeamMember')
     team_projects = ManyToManyField('project.Project')
-    team_chats = ManyToManyField('Chat')
+    team_chat = ForeignKey('TeamChat', on_delete=SET_NULL, null=True)
     team_applicants = ManyToManyField('TeamApplicant')
 
     def to_json(self):
@@ -50,22 +50,22 @@ class TeamMember(Model):
 class TeamApplicant(Model):
     ta_team_id = ForeignKey(Team, on_delete=CASCADE, null=False)
     ta_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
-    ta_apply_time = DateTimeField(null=True)
-    ta_message = CharField(max_length=100)
+    ta_apply_time = DateTimeField(null=True, auto_now_add=True)
+    ta_message = CharField(max_length=100, null=True)
 
     class Meta:
         unique_together = ['ta_team_id', 'ta_user_id']
 
 
-class GroupChat(Model):
-    gc_id = AutoField(primary_key=True)
-    gc_name = CharField(max_length=100)
-    gc_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
-    gc_team = ForeignKey(Team, on_delete=CASCADE, null=True)
-    gc_history = ManyToManyField('ChatMessage')
+class TeamChat(Model):
+    tc_id = AutoField(primary_key=True)
+    tc_name = CharField(max_length=100)
+    tc_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    tc_team = ForeignKey(Team, on_delete=CASCADE, null=True)
+    tc_history = ManyToManyField('message.ChatMessage')
 
 
 class PrivateChat(Model):
     pc_id = AutoField(primary_key=True)
     pc_members = ManyToManyField(User)
-    pc_history = ManyToManyField('ChatMessage')
+    pc_history = ManyToManyField('message.ChatMessage')

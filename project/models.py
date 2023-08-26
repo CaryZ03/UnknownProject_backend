@@ -2,7 +2,7 @@ import json
 
 from django.db.models import *
 from user.models import User
-from team.models import TeamMember
+from team.models import TeamMember, Team
 
 
 class Project(Model):
@@ -12,9 +12,9 @@ class Project(Model):
     project_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     project_create_time = DateTimeField(auto_now_add=True, null=True)
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
-    project_members = ManyToManyField(TeamMember, related_name='project_members')
     project_complete_date = DateTimeField(null=True)
     project_editable = BooleanField(default=True)
+    project_team = ForeignKey(Team, on_delete=CASCADE, null=True)
 
     def to_json(self):
         info = {

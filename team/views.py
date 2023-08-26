@@ -1,26 +1,14 @@
 import os
 import re
 import secrets
-
-from django.db.models import Q
+import json
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
-from django.core.management.utils import get_random_secret_key
-import json
-
-import team.models
 from user.models import User, UserToken
-from random import randint
-from django.core.cache import cache
-import smtplib
-from email.mime.text import MIMEText
-from email.header import Header
 from .models import Team, TeamMember, TeamApplicant
-from django.utils import timezone
-
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
@@ -302,10 +290,10 @@ def invite_link(request, user):
     team_id = data_json.get('team_id')
     day = data_json.get('day')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2090, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2100, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2091, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2101, 'msg': "当前用户不在该团队内"})
     if team.team_key_expire_time <= now():
         team.team_key = secrets.token_urlsafe(50).replace('#', '')
         team.team_key_expire_time = now() + timedelta(days=day)
@@ -320,13 +308,13 @@ def show_check(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2090, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2110, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2091, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2111, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2112, 'msg': "用户权限不足"})
     waiters = team.team_applicants.all()
     w_info = []
     for w in waiters:
@@ -348,15 +336,15 @@ def check_member(request, user):
     user_id = data_json.get('user_id')
     choose = data_json.get('choose')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2090, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2120, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2091, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2121, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2092, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2122, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 2093, 'msg': "该用户不存在"})
+        return JsonResponse({'errno': 2123, 'msg': "该用户不存在"})
     user_change = User.objects.get(user_id=user_id)
     if choose == 'yes':
         new_TeamMember = TeamMember.objects.create(tm_team_id=team, tm_user_id=user_change,
@@ -378,31 +366,37 @@ def check_member(request, user):
 @login_required
 @require_http_methods(['POST'])
 def join_team_url(request, user):
-    team_key = json.loads(request.body).get('key')
-    print(team_key)
+    data_json = json.loads(request.body)
+    team_key = data_json.get('team_key')
+    message = data_json.get('message')
     if not Team.objects.filter(team_key=team_key).exists():
-        return JsonResponse({'errno': 2100, 'msg': "团队不存在"})
+        return JsonResponse({'errno': 2140, 'msg': "团队不存在"})
     team = Team.objects.get(team_key=team_key)
     if team.team_key_expire_time <= now():
-        return JsonResponse({'errno': 2101, 'msg': "链接已过期"})
+        return JsonResponse({'errno': 2141, 'msg': "链接已过期"})
     if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2102, 'msg': "成员已存在"})
+        return JsonResponse({'errno': 2142, 'msg': "成员已存在"})
     else:
-        team.team_applicants.add(user)
+        new_team_app = TeamApplicant.objects.create(ta_team_id=team, ta_user_id=user, ta_message=message)
+        team.team_applicants.add(new_team_app)
     return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
+
 
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
 def join_team_straight(request, user):
-    team_id = json.loads(request.body).get('team_id')
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    message = data_json.get('message')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2110, 'msg': "团队不存在"})
+        return JsonResponse({'errno': 2150, 'msg': "团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2111, 'msg': "成员已存在"})
+        return JsonResponse({'errno': 2151, 'msg': "成员已存在"})
     else:
-        team.team_applicants.add(user)
+        new_team_app = TeamApplicant.objects.create(ta_team_id=team, ta_user_id=user, ta_message=message)
+        team.team_applicants.add(new_team_app)
     return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
 
 
