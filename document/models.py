@@ -5,6 +5,15 @@ from user.models import User
 from team.models import TeamMember
 
 
+class SavedDocument(Model):
+    sd_id = AutoField(primary_key=True)
+    sd_document = ForeignKey('Document', on_delete=CASCADE)
+    sd_description = TextField(null=True)
+    sd_saved_time = DateTimeField(auto_now_add=True)
+    sd_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
+    # sd_content
+
+
 class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
@@ -14,6 +23,7 @@ class Document(Model):
     document_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     document_editors = ManyToManyField('Editor', related_name='document_members')
     document_complete_date = DateTimeField(null=True)
+    document_saves = ManyToManyField(SavedDocument)
 
     def to_json(self):
         info = {

@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
 
-from user.models import User
+from user.models import User, UserToken
 from random import randint
 from django.core.cache import cache
 import smtplib
@@ -47,18 +47,13 @@ def send_email_verification(email, code):
         server.sendmail(sender, receiver, msg.as_string())
 
 
-# def create_token(uid, is_admin):
-#     token_key = get_random_secret_key()
-#     expiry_time = now() + timedelta(days=1)
-#     if is_admin:
-#         admin = Admin.objects.get(admin_id=uid)
-#         token = UserToken(key=token_key, is_admin=is_admin, admin=admin, expire_time=expiry_time)
-#     else:
-#         filler = Filler.objects.get(filler_id=uid)
-#         token = UserToken(key=token_key, is_admin=is_admin, filler=filler, expire_time=expiry_time)
-#     token.save()
-#
-#     return token.key
+def create_token(user):
+    token_key = get_random_secret_key()
+    expire_time = now() + timedelta(minutes=user.user_expire_time)
+    token = UserToken(key=token_key, user=user, expire_time=expire_time)
+    token.save()
+
+    return token.key
 
 
 def get_avatar_base64(image):
@@ -78,33 +73,36 @@ def get_avatar_base64(image):
 #     return JsonResponse({'image_url': city.img.url})
 
 
-# def login_required(view_func):
-#     def wrapper(request, *args, **kwargs):
-#         token_key = request.headers.get('Authorization')
-#         token = UserToken.objects.filter(key=token_key).first()
-#         if token and token.filler.filler_is_user:
-#             if token.expire_time < now():
-#                 return JsonResponse({'errno': 1002, 'msg': "登录信息已过期"})
-#             else:
-#                 user = token.filler.filler_user
-#                 return view_func(request, *args, user=user, **kwargs)
-#         else:
-#             return JsonResponse({'errno': 1001, 'msg': "未登录"})
-#
-#     return wrapper
+def login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        token_key = request.headers.get('Authorization')
+        token = UserToken.objects.filter(key=token_key).first()
+        if token:
+            if token.expire_time < now():
+                return JsonResponse({'errno': 1002, 'msg': "登录信息已过期"})
+            else:
+                user = token.user
+                return view_func(request, *args, user=user, **kwargs)
+        else:
+            return JsonResponse({'errno': 1001, 'msg': "未登录"})
+
+    return wrapper
 
 
-# def not_login_required(view_func):
-#     def wrapper(request, *args, **kwargs):
-#         if not request.session.items():
-#             return view_func(request, *args, **kwargs)
-#         else:
-#             return JsonResponse({'errno': 1002, 'msg': "已登录"})
-#     return wrapper
+def not_login_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        token_key = request.headers.get('Authorization')
+        token = UserToken.objects.filter(key=token_key).first()
+        if token and token.expire_time > now():
+            return JsonResponse({'errno': 1002, 'msg': "已有用户登录"})
+        else:
+            return view_func(request, *args, **kwargs)
+
+    return wrapper
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def user_register_check(request):
     data_json = json.loads(request.body)
@@ -137,7 +135,7 @@ def send_verification_code(request):
 def check_verification_code(request):
     data_json = json.loads(request.body)
     email = data_json.get('email')
-    verification_code = data_json.get['verification_code']
+    verification_code = data_json.get('verification_code')
     code = None
     if verification_code:
         code = cache.get(email)
@@ -147,7 +145,7 @@ def check_verification_code(request):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def user_register(request):
     data_json = json.loads(request.body)
@@ -168,7 +166,7 @@ def user_register(request):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def user_login(request):
     data_json = json.loads(request.body)
@@ -177,18 +175,16 @@ def user_login(request):
     if User.objects.filter(user_email=email).exists():
         user = User.objects.get(user_email=email)
         if user.user_password == password:
-            # token_key = request.headers.get('Authorization')
-            # if token_key and UserToken.objects.filter(key=token_key).exists():
-            #     token = UserToken.objects.get(key=token_key)
-            #     token.is_admin = False
-            #     token.admin = None
-            #     token.filler = filler
-            #     token.expire_time = now() + timedelta(days=1)
-            #     token.save()
-            # else:
-            #     token_key = create_token(filler.filler_id, False)
-            return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id})
-            # return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
+            UserToken.objects.filter(user=user).delete()
+            token_key = request.headers.get('Authorization')
+            if token_key and UserToken.objects.filter(key=token_key).exists():
+                token = UserToken.objects.get(key=token_key)
+                token.expire_time = now() + timedelta(minutes=user.user_expire_time)
+                token.save()
+                token_key = token.key
+            else:
+                token_key = create_token(user)
+            return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
         else:
             return JsonResponse({'errno': 1041, 'msg': "密码错误"})
     else:
@@ -196,7 +192,7 @@ def user_login(request):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def reset_password_check(request):
     data_json = json.loads(request.body)
@@ -215,7 +211,7 @@ def reset_password_check(request):
 
 
 @csrf_exempt
-# @not_login_required
+@not_login_required
 @require_http_methods(['POST'])
 def reset_password(request):
     data_json = json.loads(request.body)
@@ -237,16 +233,16 @@ def reset_password(request):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
 def logout(request, user):
     token_key = request.headers.get('Authorization')
-    # UserToken.objects.get(key=token_key).delete()
+    UserToken.objects.get(key=token_key).delete()
     return JsonResponse({'errno': 0, 'msg': "登出成功"})
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
 def cancel_account(request, user):
     user.delete()
@@ -254,7 +250,7 @@ def cancel_account(request, user):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['GET'])
 def check_profile_self(request, user):
     user_info = user.to_json()
@@ -265,7 +261,7 @@ def check_profile_self(request, user):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
 def change_profile(request, user):
     data_json = json.loads(request.body)
@@ -273,26 +269,32 @@ def change_profile(request, user):
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
     signature = data_json.get('signature')
+    real_name = data_json.get('real_name')
+    visible = data_json.get('visible')
     tel = data_json.get('tel')
     expire_time = data_json.get('expire_time')
     if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(username))):
         return JsonResponse({'errno': 1100, 'msg': "用户名不合法"})
+    if not bool(re.match("^[A-Za-z]{2,29}$", str(username))):
+        return JsonResponse({'errno': 1101, 'msg': "真实姓名不合法"})
     elif password1 != password2:
-        return JsonResponse({'errno': 1101, 'msg': "两次输入的密码不同"})
+        return JsonResponse({'errno': 1102, 'msg': "两次输入的密码不同"})
     elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
-        return JsonResponse({'errno': 1102, 'msg': "密码不合法"})
+        return JsonResponse({'errno': 1103, 'msg': "密码不合法"})
     else:
         user.user_name = username
         user.user_password = password1
         user.user_signature = signature
         user.user_tel = tel
         user.user_expire_time = expire_time
+        user.user_real_name = real_name
+        user.user_visible = visible
         user.save()
         return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['GET'])
 def check_team_list(request, user, tm_list_type):
     if tm_list_type == 'created':
@@ -310,7 +312,7 @@ def check_team_list(request, user, tm_list_type):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
 def upload_avatar(request, user):
     # 获取 JSON 数据
@@ -339,9 +341,9 @@ def upload_avatar(request, user):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
-def upload_email_check(request):
+def upload_email_check(request, user):
     # 获取 JSON 数据
     data_json = json.loads(request.body)
     email = data_json.get('email')
@@ -351,7 +353,7 @@ def upload_email_check(request):
 
 
 @csrf_exempt
-# @login_required
+@login_required
 @require_http_methods(['POST'])
 def upload_email(request, user):
     # 获取 JSON 数据
@@ -360,7 +362,8 @@ def upload_email(request, user):
     if User.objects.filter(user_email=email).exists():
         return JsonResponse({'errno': 1070, 'msg': "该邮箱已存在注册用户"})
     else:
-        user.email = email
+        user.user_email = email
+        print(email)
         user.save()
     return JsonResponse({'errno': 0, 'msg': "用户更改邮箱成功"})
 
@@ -384,11 +387,11 @@ def check_profile(request):
         user_avatar = None
         if user.user_avatar:
             user_avatar = get_avatar_base64(user.user_avatar)
-        return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'user_info': user_info, 'user_avatar': user_avatar})
+        return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'visible': 'True', 'user_info': user_info, 'user_avatar': user_avatar})
     else:
         user_avatar = None
         if user.user_avatar:
             user_avatar = get_avatar_base64(user.user_avatar)
-        return JsonResponse({'errno': 0, 'msg': '返回部分用户信息成功', 'user_name': user.user_name, 'user_avatar': user_avatar, 'user_signature': user.user_signature})
+        return JsonResponse({'errno': 0, 'msg': '返回部分用户信息成功', 'visible': 'False', 'user_name': user.user_name, 'user_avatar': user_avatar, 'user_signature': user.user_signature})
 
 

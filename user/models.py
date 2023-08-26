@@ -30,3 +30,8 @@ class User(Model):
         }
         return json.dumps(info)
 
+
+class UserToken(Model):
+    key = CharField(max_length=200, unique=True)
+    user = ForeignKey(User, on_delete=CASCADE)
+    expire_time = DateTimeField(null=True)
