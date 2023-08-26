@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-di3^!=2+oj$s#+tv+$0ti=6_0j9dv2$dda6d87!-ic@33-4ous
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -160,3 +160,4 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # 使用数据库存储会话
+

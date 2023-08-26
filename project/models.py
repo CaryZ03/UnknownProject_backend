@@ -44,6 +44,7 @@ class Project(Model):
             if self.project_end_time else None,
             "project_team": self.project_team.team_id,
             "project_editable": self.project_editable,
+            "project_team": self.project_team.team_name,
         }
         return json.dumps(info)
 
