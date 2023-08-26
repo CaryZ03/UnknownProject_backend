@@ -317,13 +317,13 @@ def show_check(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2110, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2130, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2111, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2131, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2112, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2132, 'msg': "用户权限不足"})
     waiters = team.team_applicants.all()
     w_info = []
     for w in waiters:

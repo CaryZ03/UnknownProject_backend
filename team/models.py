@@ -7,7 +7,7 @@ from django.utils.timezone import now
 class Team(Model):
     team_id = AutoField(primary_key=True)
     team_key = CharField(max_length=200, null=True)
-    team_key_expire_time = DateTimeField(null=True, auto_now_add=True)
+    team_key_expire_time = DateTimeField(null=False, auto_now_add=True)
     team_name = CharField(max_length=100)
     team_description = TextField(null=True)
     team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
@@ -42,6 +42,15 @@ class TeamMember(Model):
     )
     tm_user_permissions = CharField(max_length=20, choices=permission_choices, default='member')
     tm_user_join_time = DateTimeField(null=True, auto_now_add=True)
+
+    def to_json(self):
+        info = {
+            "tm_user_id": self.tm_user_id.user_id,
+            "tm_user_nickname": self.tm_user_nickname,
+            "tm_user_permissions": self.tm_user_permissions,
+            "tm_user_join_time": self.tm_user_join_time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return json.dumps(info)
 
     class Meta:
         unique_together = ['tm_team_id', 'tm_user_id']
