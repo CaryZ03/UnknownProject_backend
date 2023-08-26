@@ -50,8 +50,8 @@ class TeamMember(Model):
 class TeamApplicant(Model):
     ta_team_id = ForeignKey(Team, on_delete=CASCADE, null=False)
     ta_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
-    ta_apply_time = DateTimeField(null=True)
-    ta_message = CharField(max_length=100)
+    ta_apply_time = DateTimeField(null=True, auto_now_add=True)
+    ta_message = CharField(max_length=100, null=True)
 
     class Meta:
         unique_together = ['ta_team_id', 'ta_user_id']
