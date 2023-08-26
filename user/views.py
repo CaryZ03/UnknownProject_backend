@@ -365,7 +365,7 @@ def upload_email(request, user):
 @csrf_exempt
 @require_http_methods(['POST'])
 def deploy_test(request):
-    return JsonResponse({'errno': 0, 'ver': "114514", 'cur_time': now()})
+    return JsonResponse({'errno': 0, 'ver': "1145141919810", 'cur_time': now()})
 
 
 @csrf_exempt
