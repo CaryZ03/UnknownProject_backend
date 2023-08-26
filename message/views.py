@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
 from user.models import User, UserToken
-from .models import Team, TeamMember, TeamApplicant
+from team.models import Team, TeamMember, TeamApplicant
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
