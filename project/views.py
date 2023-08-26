@@ -87,7 +87,7 @@ def show_profile(request, user):
     if not Project.objects.filter(project_id=project_id).exists():
         return JsonResponse({'errno': 3012, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
-    if not project.project_recycle:
+    if project.project_recycle:
         return JsonResponse({'errno': 3013, 'msg': '项目在回收站无法操作'})
     project_info = project.to_json()
     project_avatar = None
@@ -120,7 +120,7 @@ def change_profile(request, user):
         return JsonResponse({'errno': 3012, 'msg': "该项目不存在"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     project = Project.objects.get(project_id=project_id)
-    if not project.project_recycle:
+    if project.project_recycle:
         return JsonResponse({'errno': 3013, 'msg': '项目在回收站无法操作'})
     if project.project_creator != team_member:
         return JsonResponse({'errno': 3013, 'msg': "当前用户不是该项目创建者，无法改变项目"})
@@ -160,10 +160,10 @@ def add_recycle(request, user):
         return JsonResponse({'errno': 3011, 'msg': "当前用户不在该团队内"})
     if not Project.objects.filter(project_id=project_id).exists():
         return JsonResponse({'errno': 3012, 'msg': "该项目不存在"})
-    if not project.project_recycle:
+    project = Project.objects.get(project_id=project_id)
+    if project.project_recycle:
         return JsonResponse({'errno': 3013, 'msg': '项目已在回收站'})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
-    project = Project.objects.get(project_id=project_id)
     if project.project_creator != team_member:
         return JsonResponse({'errno': 3013, 'msg': "当前用户不是该项目创建者，无法回收项目"})
     project.project_recycle = True
@@ -171,4 +171,21 @@ def add_recycle(request, user):
     return JsonResponse({'errno': 0, 'msg': "项目删除成功"})
 
 
-
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def search_status(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    status = data_json.get('status')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 3010, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3011, 'msg': "当前用户不在该团队内"})
+    projects = Project.objects.filter(project_status=status)
+    p_info = []
+    for p in projects:
+        if not p.project_recycle:
+            p_info.append(p.to_json())
+    return JsonResponse({'errno': 0, 'msg': "项目列表查询成功", 'p_info': p_info})
