@@ -94,7 +94,7 @@ def not_login_required(view_func):
         token_key = request.headers.get('Authorization')
         token = UserToken.objects.filter(key=token_key).first()
         if token and token.expire_time > now():
-            return JsonResponse({'errno': 1002, 'msg': "已有用户登录"})
+            return JsonResponse({'errno': 1003, 'msg': "已有用户登录"})
         else:
             return view_func(request, *args, **kwargs)
 
@@ -153,11 +153,11 @@ def user_register(request):
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
     if User.objects.filter(user_email=email).exists():
-        return JsonResponse({'errno': 1030, 'msg': "该邮箱已存在注册用户"})
+        return JsonResponse({'errno': 1040, 'msg': "该邮箱已存在注册用户"})
     elif password1 != password2:
-        return JsonResponse({'errno': 1031, 'msg': "两次输入的密码不同"})
+        return JsonResponse({'errno': 1041, 'msg': "两次输入的密码不同"})
     elif not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
-        return JsonResponse({'errno': 1032, 'msg': "密码不合法"})
+        return JsonResponse({'errno': 1042, 'msg': "密码不合法"})
     else:
         new_user = User.objects.create(user_email=email, user_password=password1)
         new_user.user_name = new_user.user_id
@@ -172,23 +172,21 @@ def user_login(request):
     data_json = json.loads(request.body)
     email = data_json.get('email')
     password = data_json.get('password')
-    if User.objects.filter(user_email=email).exists():
-        user = User.objects.get(user_email=email)
-        if user.user_password == password:
-            UserToken.objects.filter(user=user).delete()
-            token_key = request.headers.get('Authorization')
-            if token_key and UserToken.objects.filter(key=token_key).exists():
-                token = UserToken.objects.get(key=token_key)
-                token.expire_time = now() + timedelta(minutes=user.user_expire_time)
-                token.save()
-                token_key = token.key
-            else:
-                token_key = create_token(user)
-            return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
-        else:
-            return JsonResponse({'errno': 1041, 'msg': "密码错误"})
+    if not User.objects.filter(user_email=email).exists():
+        return JsonResponse({'errno': 1050, 'msg': "用户不存在"})
+    user = User.objects.get(user_email=email)
+    if user.user_password != password:
+        return JsonResponse({'errno': 1051, 'msg': "密码错误"})
+    UserToken.objects.filter(user=user).delete()
+    token_key = request.headers.get('Authorization')
+    if token_key and UserToken.objects.filter(key=token_key).exists():
+        token = UserToken.objects.get(key=token_key)
+        token.expire_time = now() + timedelta(minutes=user.user_expire_time)
+        token.save()
+        token_key = token.key
     else:
-        return JsonResponse({'errno': 1040, 'msg': "用户不存在"})
+        token_key = create_token(user)
+    return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
 
 
 @csrf_exempt
@@ -199,15 +197,13 @@ def reset_password_check(request):
     email = data_json.get('email')
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
-    if User.objects.filter(user_email=email).exists():
-        if password1 != password2:
-            return JsonResponse({'errno': 1051, 'msg': "两次输入的密码不同"})
-        elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
-            return JsonResponse({'errno': 1052, 'msg': "密码不合法"})
-        else:
-            return JsonResponse({'errno': 0, 'msg': "信息验证成功"})
-    else:
-        return JsonResponse({'errno': 1050, 'msg': "用户不存在"})
+    if not User.objects.filter(user_email=email).exists():
+        return JsonResponse({'errno': 1060, 'msg': "用户不存在"})
+    if password1 != password2:
+        return JsonResponse({'errno': 1061, 'msg': "两次输入的密码不同"})
+    if not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
+        return JsonResponse({'errno': 1062, 'msg': "密码不合法"})
+    return JsonResponse({'errno': 0, 'msg': "信息验证成功"})
 
 
 @csrf_exempt
@@ -218,18 +214,16 @@ def reset_password(request):
     email = data_json.get('email')
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
-    if User.objects.filter(user_email=email).exists():
-        user = User.objects.get(user_email=email)
-        if password1 != password2:
-            return JsonResponse({'errno': 1061, 'msg': "两次输入的密码不同"})
-        elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
-            return JsonResponse({'errno': 1062, 'msg': "密码不合法"})
-        else:
-            user.user_password = password1
-            user.save()
-            return JsonResponse({'errno': 0, 'msg': "重置密码成功"})
-    else:
-        return JsonResponse({'errno': 1060, 'msg': "用户不存在"})
+    if not User.objects.filter(user_email=email).exists():
+        return JsonResponse({'errno': 1070, 'msg': "用户不存在"})
+    user = User.objects.get(user_email=email)
+    if password1 != password2:
+        return JsonResponse({'errno': 1071, 'msg': "两次输入的密码不同"})
+    if not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
+        return JsonResponse({'errno': 1072, 'msg': "密码不合法"})
+    user.user_password = password1
+    user.save()
+    return JsonResponse({'errno': 0, 'msg': "重置密码成功"})
 
 
 @csrf_exempt
@@ -274,13 +268,13 @@ def change_profile(request, user):
     tel = data_json.get('tel')
     expire_time = data_json.get('expire_time')
     if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(username))):
-        return JsonResponse({'errno': 1100, 'msg': "用户名不合法"})
+        return JsonResponse({'errno': 1110, 'msg': "用户名不合法"})
     if not bool(re.match("^[A-Za-z]{2,29}$", str(username))):
-        return JsonResponse({'errno': 1101, 'msg': "真实姓名不合法"})
+        return JsonResponse({'errno': 1111, 'msg': "真实姓名不合法"})
     elif password1 != password2:
-        return JsonResponse({'errno': 1102, 'msg': "两次输入的密码不同"})
+        return JsonResponse({'errno': 1112, 'msg': "两次输入的密码不同"})
     elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
-        return JsonResponse({'errno': 1103, 'msg': "密码不合法"})
+        return JsonResponse({'errno': 1113, 'msg': "密码不合法"})
     else:
         user.user_name = username
         user.user_password = password1
@@ -304,11 +298,11 @@ def check_team_list(request, user, tm_list_type):
     elif tm_list_type == 'joined':
         teams = user.user_joined_teams.all()
     else:
-        return JsonResponse({'errno': 1110, 'msg': '未指定团队列表'})
+        return JsonResponse({'errno': 1120, 'msg': '未指定团队列表'})
     tm_info = []
     for tm in teams:
         tm_info.append(tm.to_json())
-    return JsonResponse({'errno': 0, 'msg': '返回问卷列表成功', 'tm_info': tm_info})
+    return JsonResponse({'errno': 0, 'msg': '返回团队列表成功', 'tm_info': tm_info})
 
 
 @csrf_exempt
@@ -330,14 +324,14 @@ def upload_avatar(request, user):
     return JsonResponse({'errno': 0, 'msg': "用户头像上传成功"})
 
 
-# @csrf_exempt
-# @require_http_methods(['GET'])
-# def check_token(request):
-#     token_key = request.headers.get('Authorization')
-#     token = UserToken.objects.filter(key=token_key).first()
-#     if token is None or token.expire_time < now():
-#         return JsonResponse({'errno': 1151, 'msg': "token错误"})
-#     return JsonResponse({'errno': 0, 'msg': "token有效"})
+@csrf_exempt
+@require_http_methods(['GET'])
+def check_token(request):
+    token_key = request.headers.get('Authorization')
+    token = UserToken.objects.filter(key=token_key).first()
+    if token is None or token.expire_time < now():
+        return JsonResponse({'errno': 1151, 'msg': "token错误"})
+    return JsonResponse({'errno': 0, 'msg': "token有效"})
 
 
 @csrf_exempt
@@ -371,7 +365,7 @@ def upload_email(request, user):
 @csrf_exempt
 @require_http_methods(['POST'])
 def deploy_test(request):
-    return JsonResponse({'errno': 0, 'ver': "8", 'cur_time': now()})
+    return JsonResponse({'errno': 0, 'ver': "114514", 'cur_time': now()})
 
 
 @csrf_exempt
@@ -380,7 +374,7 @@ def check_profile(request):
     data_json = json.loads(request.body)
     user_id = data_json.get('user_id')
     if not User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 1120, 'msg': '该用户不存在'})
+        return JsonResponse({'errno': 1130, 'msg': '该用户不存在'})
     user = User.objects.get(user_id=user_id)
     if user.user_visible:
         user_info = user.to_json()

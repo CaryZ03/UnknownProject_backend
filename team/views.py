@@ -219,19 +219,28 @@ def delete_member(request, user):
     # 修改群聊内容
 
 
-
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
 def show_member(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
+    m_type = data_json.get('type')
     if not Team.objects.filter(team_id=team_id).exists():
         return JsonResponse({'errno': 2070, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 2071, 'msg': "当前用户不在该团队内"})
-    members = team.team_member.all()
+    if m_type == 'creator':
+        members = team.team_member.filter(tm_user_permissions='creator')
+    elif m_type == 'manager':
+        members = team.team_member.filter(tm_user_permissions='manager')
+    elif m_type == 'normal':
+        members = team.team_member.filter(tm_user_permissions='member')
+    elif m_type == 'all':
+        members = team.team_member.all()
+    else:
+        return JsonResponse({'errno': 2072, 'msg': "未指定成员类型"})
     data = {"members": [
         {"user_id": member.tm_user_id.user_id, "nickname": member.tm_user_nickname, "permission": member.tm_user_permissions, "join_time": member.tm_user_join_time
          } for member in members]}
@@ -250,7 +259,7 @@ def show_team(request):
     team_avatar = None
     if team.team_avatar:
         team_avatar = get_avatar_base64(team.team_avatar)
-    return JsonResponse({'errno': 0, 'msg': '返回用户信息成功', 'team_info': team_info, 'team_avatar': team_avatar})
+    return JsonResponse({'errno': 0, 'msg': '返回团队信息成功', 'team_info': team_info, 'team_avatar': team_avatar})
 
 
 def get_avatar_base64(image):
@@ -308,13 +317,13 @@ def show_check(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2110, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2130, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2111, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2131, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2112, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2132, 'msg': "用户权限不足"})
     waiters = team.team_applicants.all()
     w_info = []
     for w in waiters:
@@ -336,27 +345,30 @@ def check_member(request, user):
     user_id = data_json.get('user_id')
     choose = data_json.get('choose')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2120, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2140, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2121, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2141, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2122, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2142, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 2123, 'msg': "该用户不存在"})
+        return JsonResponse({'errno': 2143, 'msg': "该用户不存在"})
     user_change = User.objects.get(user_id=user_id)
+    if not TeamApplicant.objects.filter(ta_team_id=team, ta_user_id=user_change).exists():
+        return JsonResponse({'errno': 2144, 'msg': "待审核用户未提交申请"})
     if choose == 'yes':
         new_TeamMember = TeamMember.objects.create(tm_team_id=team, tm_user_id=user_change,
                                                    tm_user_nickname=user_change.user_name, tm_user_permissions='member')
         user_change.user_joined_teams.add(team)
-        member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
+        member_change = TeamApplicant.objects.get(ta_team_id=team, ta_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
         team.team_member.add(new_TeamMember)
+        # 修改群聊
         return JsonResponse({'errno': 0, 'msg': "审核通过"})
     else:
-        member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
+        member_change = TeamApplicant.objects.get(ta_team_id=team, ta_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
         return JsonResponse({'errno': 0, 'msg': "审核不通过"})
@@ -370,12 +382,14 @@ def join_team_url(request, user):
     team_key = data_json.get('team_key')
     message = data_json.get('message')
     if not Team.objects.filter(team_key=team_key).exists():
-        return JsonResponse({'errno': 2140, 'msg': "团队不存在"})
+        return JsonResponse({'errno': 2110, 'msg': "该团队不存在"})
     team = Team.objects.get(team_key=team_key)
     if team.team_key_expire_time <= now():
-        return JsonResponse({'errno': 2141, 'msg': "链接已过期"})
+        return JsonResponse({'errno': 2111, 'msg': "链接已过期"})
     if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2142, 'msg': "成员已存在"})
+        return JsonResponse({'errno': 2112, 'msg': "成员已存在"})
+    if TeamApplicant.objects.filter(ta_team_id=team, ta_user_id=user).exists():
+        return JsonResponse({'errno': 2113, 'msg': "已提交过申请"})
     else:
         new_team_app = TeamApplicant.objects.create(ta_team_id=team, ta_user_id=user, ta_message=message)
         team.team_applicants.add(new_team_app)
@@ -390,13 +404,33 @@ def join_team_straight(request, user):
     team_id = data_json.get('team_id')
     message = data_json.get('message')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2150, 'msg': "团队不存在"})
+        return JsonResponse({'errno': 2120, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2151, 'msg': "成员已存在"})
+        return JsonResponse({'errno': 2121, 'msg': "成员已存在"})
+    if TeamApplicant.objects.filter(ta_team_id=team, ta_user_id=user).exists():
+        return JsonResponse({'errno': 2122, 'msg': "已提交过申请"})
     else:
         new_team_app = TeamApplicant.objects.create(ta_team_id=team, ta_user_id=user, ta_message=message)
         team.team_applicants.add(new_team_app)
     return JsonResponse({'errno': 0, 'msg': "加入申请成功", 'team_id': team.team_id})
 
 
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_nickname(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    nickname = data_json.get('nickname')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2150, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2151, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
+    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+        return JsonResponse({'errno': 2152, 'msg': "昵称不合法"})
+    team_member.tm_user_nickname = nickname
+    team_member.save()
+    return JsonResponse({'errno': 0, 'msg': "修改团队昵称成功"})

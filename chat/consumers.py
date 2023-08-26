@@ -28,13 +28,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         #user_id = text_data_json['user_id']
         #user_name = text_data_json['user_name']
 
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
+
                 #'user_id': user_id,
                 #'user_name': user_name
+
             }
         )
 
@@ -45,6 +48,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             #'user_id': user_id,
             #'user_name': user_name,
+
             'message': message,
         }))
 
