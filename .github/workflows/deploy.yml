@@ -22,7 +22,6 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           script: |
             cd /root/UnknowProject/UnknownProject_backend
-            pkill -f "python manage.py runserver 127.0.0.1:5566"
             git pull
             pip install -r requirements.txt
             sleep 3
