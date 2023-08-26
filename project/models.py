@@ -36,6 +36,7 @@ class Project(Model):
             "project_creator": self.project_creator.tm_user_nickname if self.project_creator else None,
             "project_complete_date": self.project_complete_date.strftime("%Y-%m-%d %H:%M:%S")
             if self.project_complete_date else None,
+            "project_team": self.project_team.team_name,
         }
         return json.dumps(info)
 
