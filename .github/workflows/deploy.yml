@@ -25,7 +25,6 @@ jobs:
             git pull
             pip install -r requirements.txt
             sleep 3
-            python manage.py runserver 127.0.0.1:5566 &
 
             sudo service nginx restart
             
