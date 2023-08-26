@@ -17,7 +17,7 @@ class Project(Model):
     project_start_time = DateTimeField(null=True)
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     project_editable = BooleanField(default=True)
-    project_team = ForeignKey(Team, on_delete=CASCADE, null=False)
+    project_team = ForeignKey(Team, on_delete=CASCADE, null=True)
     status_choices = (
         ('not_started', "未开始"),
         ('doing', "进行中"),
@@ -49,7 +49,7 @@ class Requirement(Model):
     requirement_estimated_end_time = DateTimeField(null=True)
     requirement_end_time = DateTimeField(null=True)
     requirement_start_time = DateTimeField(null=True)
-    requirement_project = ForeignKey(Project, on_delete=CASCADE, null=False)
+    requirement_project = ForeignKey(Project, on_delete=CASCADE, null=True)
     status_choices = (
         ('not_started', "未开始"),
         ('doing', "进行中"),

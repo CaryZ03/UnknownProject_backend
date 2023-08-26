@@ -345,28 +345,30 @@ def check_member(request, user):
     user_id = data_json.get('user_id')
     choose = data_json.get('choose')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 2120, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 2140, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 2121, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 2141, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions == 'member':
-        return JsonResponse({'errno': 2122, 'msg': "用户权限不足"})
+        return JsonResponse({'errno': 2142, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 2123, 'msg': "该用户不存在"})
+        return JsonResponse({'errno': 2143, 'msg': "该用户不存在"})
     user_change = User.objects.get(user_id=user_id)
+    if not TeamApplicant.objects.filter(ta_team_id=team, ta_user_id=user_change).exists():
+        return JsonResponse({'errno': 2144, 'msg': "待审核用户未提交申请"})
     if choose == 'yes':
         new_TeamMember = TeamMember.objects.create(tm_team_id=team, tm_user_id=user_change,
                                                    tm_user_nickname=user_change.user_name, tm_user_permissions='member')
         user_change.user_joined_teams.add(team)
-        member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
+        member_change = TeamApplicant.objects.get(ta_team_id=team, ta_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
         team.team_member.add(new_TeamMember)
         # 修改群聊
         return JsonResponse({'errno': 0, 'msg': "审核通过"})
     else:
-        member_change = TeamApplicant.objects.get(tm_team_id=team, tm_user_id=user_change)
+        member_change = TeamApplicant.objects.get(ta_team_id=team, ta_user_id=user_change)
         team.team_applicants.remove(member_change)
         member_change.delete()
         return JsonResponse({'errno': 0, 'msg': "审核不通过"})
