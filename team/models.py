@@ -4,6 +4,7 @@ from django.db.models import *
 from user.models import User
 from django.utils.timezone import now
 
+
 class Team(Model):
     team_id = AutoField(primary_key=True)
     team_key = CharField(max_length=200, null=True)
@@ -52,6 +53,16 @@ class TeamApplicant(Model):
     ta_user_id = ForeignKey(User, on_delete=CASCADE, null=False)
     ta_apply_time = DateTimeField(null=True, auto_now_add=True)
     ta_message = CharField(max_length=100, null=True)
+
+    def to_json(self):
+        info = {
+
+            "user_id": self.ta_user_id.user_id,
+            "user_name": self.ta_user_id.user_name,
+            "message": self.ta_message,
+            "apply_time": self.ta_apply_time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return json.dumps(info)
 
     class Meta:
         unique_together = ['ta_team_id', 'ta_user_id']
