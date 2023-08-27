@@ -292,14 +292,14 @@ def change_profile(request, user):
 @require_http_methods(['POST'])
 def check_team_list(request, user):
     data_json = json.loads(request.body)
-    type = data_json.get('type')
-    if type == 'created':
+    choose = data_json.get('choose')
+    if choose == 'created':
         teams = user.user_created_teams.all()
-    elif type == 'managed':
+    elif choose == 'managed':
         teams = user.user_managed_teams.all()
-    elif type == 'joined':
+    elif choose == 'joined':
         teams = user.user_joined_teams.all()
-    elif type == 'all':
+    elif choose == 'all':
         teams = user.user_created_teams.all().union(user.user_managed_teams.all()).union(user.user_joined_teams.all())
     else:
         return JsonResponse({'errno': 1120, 'msg': '未指定团队列表'})
