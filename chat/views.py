@@ -8,8 +8,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
-from user.models import User, UserToken
-from team.models import Team, TeamMember, TeamApplicant
+from user.models import *
+from team.models import *
+from message.models import *
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
@@ -64,3 +65,33 @@ def get_teams_for_user(request):
 
     return JsonResponse({'teams': teams_info})
 
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def store_message(request):
+    data = json.loads(request.body)
+    message = data.get('message')
+    user_id = data.get('user_id')
+    team_id = data.get('team_id')
+    is_at = data.get('is_at')
+    is_at_all = data.get('is_at_all')
+    array_data = data.get('arrayData', [])
+
+    user = User.objects.get(user_id=user_id)
+    team = Team.objects.get(team_id=team_id)
+    team_chat = team.team_chat
+    history = team_chat.tc_history
+
+    if is_at:
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at)
+        for at_id in array_data:
+            at_user = User.objects.get(user_id=at_id)
+            at_team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=at_user)
+            new_chat_message.cm_at.add(at_team_member)
+    elif is_at_all:
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all)
+    else:
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message)
+    new_chat_message.save()
+    history.add(new_chat_message)
+    team_chat.save()
