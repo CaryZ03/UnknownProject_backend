@@ -115,10 +115,10 @@ def user_register_check(request):
         return JsonResponse({'errno': 1010, 'msg': "该邮箱已存在注册用户"})
     if password1 != password2:
         return JsonResponse({'errno': 1011, 'msg': "两次输入的密码不同"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
-        return JsonResponse({'errno': 1012, 'msg': "用户名不合法"})
-    if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
-        return JsonResponse({'errno': 1013, 'msg': "真实姓名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+    #     return JsonResponse({'errno': 1012, 'msg': "用户名不合法"})
+    # if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
+    #     return JsonResponse({'errno': 1013, 'msg': "真实姓名不合法"})
     if not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
         return JsonResponse({'errno': 1014, 'msg': "密码不合法"})
     else:
@@ -166,10 +166,10 @@ def user_register(request):
         return JsonResponse({'errno': 1041, 'msg': "两次输入的密码不同"})
     if not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
         return JsonResponse({'errno': 1042, 'msg': "密码不合法"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
-        return JsonResponse({'errno': 1143, 'msg': "用户名不合法"})
-    if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
-        return JsonResponse({'errno': 1144, 'msg': "真实姓名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+    #     return JsonResponse({'errno': 1143, 'msg': "用户名不合法"})
+    # if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
+    #     return JsonResponse({'errno': 1144, 'msg': "真实姓名不合法"})
     else:
         new_user = User.objects.create(user_email=email, user_password=password1, user_name=nickname, user_real_name=realname)
         new_user.save()
@@ -278,11 +278,11 @@ def change_profile(request, user):
     visible = data_json.get('visible')
     tel = data_json.get('tel')
     expire_time = data_json.get('expire_time')
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(username))):
-        return JsonResponse({'errno': 1110, 'msg': "用户名不合法"})
-    if not bool(re.match("^[A-Za-z]{2,29}$", str(real_name))):
-        return JsonResponse({'errno': 1111, 'msg': "真实姓名不合法"})
-    elif password1 != password2:
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(username))):
+    #     return JsonResponse({'errno': 1110, 'msg': "用户名不合法"})
+    # if not bool(re.match("^[A-Za-z]{2,29}$", str(real_name))):
+    #     return JsonResponse({'errno': 1111, 'msg': "真实姓名不合法"})
+    if password1 != password2:
         return JsonResponse({'errno': 1112, 'msg': "两次输入的密码不同"})
     elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
         return JsonResponse({'errno': 1113, 'msg': "密码不合法"})

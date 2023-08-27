@@ -22,8 +22,8 @@ def create_team(request, user):
     name = data_json.get('name')
     description = data_json.get('description')
     tel = data_json.get('tel')
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 2000, 'msg': "团队名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 2000, 'msg': "团队名不合法"})
     new_team = Team.objects.create(team_name=name, team_description=description, team_tel=tel)
     new_team.team_creator = user
     new_TeamMember = TeamMember.objects.create(tm_team_id=new_team, tm_user_id=user, tm_user_nickname=user.user_name, tm_user_permissions='creator', tm_user_join_time=new_team.team_create_time)
@@ -52,8 +52,8 @@ def change_team_profile(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions != 'creator' and team_member.tm_user_permissions != 'manager':
         return JsonResponse({'errno': 2012, 'msg': "用户权限不足"})
-    elif not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 2013, 'msg': "团队名不合法"})
+    # elif not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 2013, 'msg': "团队名不合法"})
     else:
         team.team_name = name
         team.team_description = description
@@ -425,8 +425,8 @@ def change_nickname(request, user):
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 2151, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
-        return JsonResponse({'errno': 2152, 'msg': "昵称不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+    #     return JsonResponse({'errno': 2152, 'msg': "昵称不合法"})
     team_member.tm_user_nickname = nickname
     team_member.save()
     return JsonResponse({'errno': 0, 'msg': "修改团队昵称成功"})

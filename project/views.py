@@ -33,8 +33,8 @@ def create_project(request, user):
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 3001, 'msg': "当前用户不在该团队内"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 3002, 'msg': "项目名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 3002, 'msg': "项目名不合法"})
     if estimated_start_time and estimated_end_time:
         time_format = "%Y-%m-%d %H:%M:%S"
         estimated_start_time = datetime.datetime.strptime(estimated_start_time, time_format)
@@ -126,8 +126,8 @@ def change_profile(request, user):
         return JsonResponse({'errno': 3033, 'msg': '项目在回收站无法操作'})
     if project.project_creator != team_member:
         return JsonResponse({'errno': 3034, 'msg': "当前用户不是该项目创建者，无法改变项目"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 3035, 'msg': "项目名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 3035, 'msg': "项目名不合法"})
     if estimated_start_time and estimated_end_time:
         time_format = "%Y-%m-%d %H:%M:%S"
         estimated_start_time = datetime.datetime.strptime(estimated_start_time, time_format)
@@ -250,8 +250,8 @@ def create_requirement(request, user):
         return JsonResponse({'errno': 3061, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 3062, 'msg': "项目在回收站中，无法操作"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 3063, 'msg': "需求名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 3063, 'msg': "需求名不合法"})
     if estimated_start_time and estimated_end_time:
         time_format = "%Y-%m-%d %H:%M:%S"
         estimated_start_time = datetime.datetime.strptime(estimated_start_time, time_format)
@@ -339,8 +339,8 @@ def change_profile_requirement(request, user):
     requirement = Requirement.objects.get(requirement_id=requirement_id)
     if requirement.requirement_creator != team_member:
         return JsonResponse({'errno': 3094, 'msg': "当前用户不是该项目创建者，无法删除项目"})
-    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
-        return JsonResponse({'errno': 3095, 'msg': "需求名不合法"})
+    # if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
+    #     return JsonResponse({'errno': 3095, 'msg': "需求名不合法"})
     if estimated_start_time and estimated_end_time:
         time_format = "%Y-%m-%d %H:%M:%S"
         estimated_start_time = datetime.datetime.strptime(estimated_start_time, time_format)
