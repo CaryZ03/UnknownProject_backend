@@ -95,3 +95,4 @@ def store_message(request):
     new_chat_message.save()
     history.add(new_chat_message)
     team_chat.save()
+    return JsonResponse({'errno': 0, 'msg': "插入消息成功"})
