@@ -309,16 +309,13 @@ def check_team_list(request, user, tm_list_type):
 @login_required
 @require_http_methods(['POST'])
 def upload_avatar(request, user):
-    # 获取 JSON 数据
-    data_json = json.loads(request.body)
-    data = data_json.get('data')
+    # 本地图片路径
+    relative_image_path = f'avatar/user/{user.user_id}.png'  # 根据实际情况调整路径
 
-    # 解码 Base64 图片数据
-    # format, imgstr = data.split(';base64,')
-    # ext = format.split('/')[-1]
-    image = ContentFile(base64.b64decode(data), name=f"{user.user_id}.png")
+    # 设置 User 对象的 ImageField 属性
+    user.user_avatar.name = relative_image_path
 
-    user.user_avatar.save(image.name, image)
+    # 保存用户对象的更改
     user.save()
 
     return JsonResponse({'errno': 0, 'msg': "用户头像上传成功"})

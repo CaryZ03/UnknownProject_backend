@@ -27,7 +27,7 @@
 
             reader.onload = event => {
                 const data = event.target.result.split(',')[1];
-                const user_id = 1;
+                const user_id = 5;
                 socket.send(JSON.stringify({ data, user_id }));
             };
 
