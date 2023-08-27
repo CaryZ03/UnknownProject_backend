@@ -100,7 +100,9 @@ def store_message(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def get_team_chat_history(request, team_id):
+def get_team_chat_history(request):
+    data = json.loads(request.body)
+    team_id = data.get('team_id')
     team = Team.objects.get(team_id=team_id)
     team_chat = team.team_chat
     chat_messages = team_chat.tc_history.all().order_by('cm_create_time')
