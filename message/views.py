@@ -75,6 +75,8 @@ def group_send_notification_to_user(request):
     receiver = data_json.get('receiver')
     notification = Notification.objects.create(name=name, content=content, creator=creator)
     for user_id in receiver_list:
+        notification.notification_receiver.add(User.objects.get(user_id=user_id))
         send_notification_to_user(user_id, notification)
+
     return JsonResponse({'errno': 0, 'msg': "hihi"})
 

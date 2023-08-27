@@ -12,7 +12,7 @@ class User(Model):
     user_avatar = ImageField(upload_to='avatar/user/', max_length=225, blank=True, null=True)
     user_email = EmailField(max_length=50, default=None, blank=True, null=False)
     user_tel = TextField(null=True)
-    user_expire_time = IntegerField(null=True, default=30)
+    user_expire_time = IntegerField(null=True, default=2880)
     user_created_teams = ManyToManyField('team.Team', related_name='created_by_users')
     user_managed_teams = ManyToManyField('team.Team', related_name='managed_by_users')
     user_joined_teams = ManyToManyField('team.Team', related_name='joined_by_users')

@@ -14,7 +14,7 @@ class SavedDocument(Model):
 class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
-    document_team = ForeignKey('team.Team', on_delete=CASCADE)
+    document_team = ForeignKey('team.Team', on_delete=CASCADE, null=True)
     document_allowed_editors = ManyToManyField('user.User')
     document_saves = ManyToManyField(SavedDocument)
 
