@@ -59,7 +59,8 @@ def get_teams_for_user(request):
 
     for team_member in TeamMember.objects.filter(tm_user_id=user):
         team_info = {
-            'team_id': team_member.tm_team_id.team_id
+            'team_id': team_member.tm_team_id.team_id,
+            'team_name': team_member.tm_team_id.team_name
         }
         teams_info.append(team_info)
 
