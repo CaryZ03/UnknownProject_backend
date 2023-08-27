@@ -298,7 +298,7 @@ def check_team_list(request, user, tm_list_type):
     elif tm_list_type == 'joined':
         teams = user.user_joined_teams.all()
     elif tm_list_type == 'all':
-        teams = user.user_created_teams.all().union(user.user_managed_teams.all(), user.user_joined_teams.all())
+        teams = user.user_created_teams.all().union(user.user_managed_teams.all()).union(user.user_joined_teams.all())
     else:
         return JsonResponse({'errno': 1120, 'msg': '未指定团队列表'})
     tm_info = []

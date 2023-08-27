@@ -13,7 +13,7 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
 
         # 将用户添加到组，以便向特定用户发送通知
         await self.channel_layer.group_add(
-            "user_notification_receiver_" + user_id,
+            "user_notification_receiver_" + str(user_id),
             self.channel_name
         )
 
@@ -23,7 +23,7 @@ class UserNotificationConsumer(AsyncWebsocketConsumer):
 
         # 将用户从组中移除
         await self.channel_layer.group_discard(
-            "user_notification_receiver_" + user_id,
+            "user_notification_receiver_" + str(user_id),
             self.channel_name
         )
 
