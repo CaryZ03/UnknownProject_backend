@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket File Upload</title>
+</head>
+<body>
+    <input type="file" id="fileInput">
+    <button id="uploadButton">Upload</button>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+
+        const socket = new WebSocket('ws://127.0.0.1:8000/ws/upload/avatar/user/');
+
+        socket.onopen = event => {
+            console.log('WebSocket connection opened.');
+        };
+
+        socket.onmessage = event => {
+            console.log('WebSocket message received:', event.data);
+        };
+
+        uploadButton.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = event => {
+                const data = event.target.result.split(',')[1];
+                const user_id = 1;
+                socket.send(JSON.stringify({ data, user_id }));
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>

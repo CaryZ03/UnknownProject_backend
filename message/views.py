@@ -31,3 +31,20 @@ def send_(request, user):
         team.team_key_expire_time = now() + timedelta(days=day)
         team.save()
     return JsonResponse({'errno': 0, 'msg': team.team_key})
+
+
+# @csrf_exempt
+# @require_http_methods(['POST'])
+# def send_notification_to_user(request):
+#     data_json = json.loads(request.body)
+#     user_id = data_json.get('user_id')
+#     message = data_json.get('message')
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         "user_notification_receiver_" + user_id,
+#         {
+#             "type": "send.notification",
+#             "message": message
+#         }
+#     )
+
