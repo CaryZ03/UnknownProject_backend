@@ -289,8 +289,10 @@ def change_profile(request, user):
 
 @csrf_exempt
 @login_required
-@require_http_methods(['GET'])
-def check_team_list(request, user, tm_list_type):
+@require_http_methods(['POST'])
+def check_team_list(request, user):
+    data_json = json.loads(request.body)
+    tm_list_type = data_json.get('data_json = json.loads(request.body)')
     if tm_list_type == 'created':
         teams = user.user_created_teams.all()
     elif tm_list_type == 'managed':
