@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
 from user.models import User, UserToken
-from .models import Team, TeamMember, TeamApplicant
+from .models import Team, TeamMember, TeamApplicant, TeamChat
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
@@ -21,20 +21,17 @@ def create_team(request, user):
     data_json = json.loads(request.body)
     name = data_json.get('name')
     description = data_json.get('description')
-    avatar = data_json.get('data')
     tel = data_json.get('tel')
     if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,99}$", str(name))):
         return JsonResponse({'errno': 2000, 'msg': "团队名不合法"})
     new_team = Team.objects.create(team_name=name, team_description=description, team_tel=tel)
     new_team.team_creator = user
-    if avatar:
-        image = ContentFile(base64.b64decode(avatar), name=f"{new_team.team_id}.png")
-        new_team.team_avatar.save(image.name, image)
-    new_team.save()
     new_TeamMember = TeamMember.objects.create(tm_team_id=new_team, tm_user_id=user, tm_user_nickname=user.user_name, tm_user_permissions='creator', tm_user_join_time=new_team.team_create_time)
     user.user_created_teams.add(new_team)
     new_team.team_member.add(new_TeamMember)
-    # 添加群聊
+    new_chat = TeamChat.objects.create(tc_team=new_team)
+    new_team.team_chat = new_chat
+    new_team.save()
     return JsonResponse({'errno': 0, 'msg': "团队创建成功"})
 
 
@@ -70,7 +67,6 @@ def change_team_profile(request, user):
 @require_http_methods(['POST'])
 def change_team_avatar(request, user):
     data_json = json.loads(request.body)
-    data = data_json.get('data')
     team_id = data_json.get('team_id')
     if not Team.objects.filter(team_id=team_id).exists():
         return JsonResponse({'errno': 2020, 'msg': "该团队不存在"})
@@ -80,8 +76,8 @@ def change_team_avatar(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if team_member.tm_user_permissions != 'creator' and team_member.tm_user_permissions != 'manager':
         return JsonResponse({'errno': 2022, 'msg': "用户权限不足"})
-    image = ContentFile(base64.b64decode(data), name=f"{team.team_id}.png")
-    team.team_avatar.save(image.name, image)
+    relative_image_path = f'avatar/team/{team.team_id}.png'
+    team.team_avatar.name = relative_image_path
     team.save()
     return JsonResponse({'errno': 0, 'msg': "团队头像上传成功"})
 
