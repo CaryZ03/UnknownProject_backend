@@ -96,3 +96,26 @@ def store_message(request):
     history.add(new_chat_message)
     team_chat.save()
     return JsonResponse({'errno': 0, 'msg': "插入消息成功"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def get_team_chat_history(request, team_id):
+    team = Team.objects.get(team_id=team_id)
+    team_chat = team.team_chat
+    chat_messages = team_chat.tc_history.all().order_by('cm_create_time')
+
+    message_list = []
+    for message in chat_messages:
+        message_info = {
+            "message": message.cm_content,
+            "user_id": message.cm_from.user_id,
+            "cm_create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "is_at": message.cm_isat,
+            "is_at_all": message.cm_at_all,
+            "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
+        }
+        message_list.append(message_info)
+
+    return JsonResponse({"chat_history": message_list})
+
