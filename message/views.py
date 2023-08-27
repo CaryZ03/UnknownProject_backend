@@ -72,7 +72,7 @@ def group_send_notification_to_user(request):
     name = data_json.get('name')
     content = data_json.get('content')
     creator = data_json.get('creator')
-    receiver = data_json.get('receiver')
+    receiver_list = data_json.get('receiver_list')
     notification = Notification.objects.create(name=name, content=content, creator=creator)
     for user_id in receiver_list:
         notification.notification_receiver.add(User.objects.get(user_id=user_id))

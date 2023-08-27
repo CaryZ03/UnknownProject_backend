@@ -13,7 +13,7 @@ class ChatMessage(Model):
     cm_isat = BooleanField(default=False)
     cm_at_all = BooleanField(default=False)
     cm_at = ManyToManyField(TeamMember)
-
+    cm_type = CharField(max_length=100, default='message')
 
 
 class Notification(Model):
@@ -22,7 +22,13 @@ class Notification(Model):
     notification_content = TextField(null=True)
     notification_create_time = DateTimeField(auto_now_add=True)
     notification_creator = ForeignKey('user.User', on_delete=SET_NULL, null=True, related_name='creator')
-    notification_receiver = ManyToManyField('user.User', related_name='receiver')
+    notification_receiver = ForeignKey('user.User', on_delete=SET_NULL, null=True, related_name='receiver')
+    notification_type_choices = (
+        ('at', "@信息"),
+        ('application', "申请信息"),
+        ('system', "系统信息")
+    )
+    notification_type = CharField(max_length=20, choices=notification_type_choices, default='system')
 
     def to_json(self):
         info = {

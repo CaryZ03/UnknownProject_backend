@@ -18,6 +18,7 @@ class User(Model):
     user_joined_teams = ManyToManyField('team.Team', related_name='joined_by_users')
     user_created_projects = ManyToManyField('project.Project')
     user_visible = BooleanField(default=True)
+    user_notification_list = ManyToManyField('message.Notification')
 
     def to_json(self):
         info = {
