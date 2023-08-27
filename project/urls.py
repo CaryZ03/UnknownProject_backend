@@ -13,4 +13,6 @@ urlpatterns = [
     path('change_profile_requirement', change_profile_requirement, name='change_profile_requirement'),
     path('check_project_list', check_project_list, name='check_project_list'),
     path('search_status', search_status, name='search_status'),
+    path('check_project_list_team', check_project_list_team, name='check_project_list_team'),
+    path('check_requirement_list', check_requirement_list, name='check_requirement_list'),
 ]

@@ -342,3 +342,43 @@ def change_profile_requirement(request, user):
     requirement.requirement_name = name
     requirement.save()
     return JsonResponse({'errno': 0, 'msg': "需求信息修改成功"})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def check_project_list_team(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    recycle = data_json.get('recycle')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 3110, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3111, 'msg': "当前用户不在该团队内"})
+    projects = team.team_projects.filter(project_recycle=recycle)
+    p_info = []
+    for p in projects:
+        p_info.append(p.to_json())
+    return JsonResponse({'errno': 0, 'msg': "项目列表查询成功", 'p_info': p_info})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def check_requirement_list(request, user):
+    data_json = json.loads(request.body)
+    project_id = data_json.get('project_id')
+    if not Project.objects.filter(project_id=project_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该项目不存在"})
+    project = Project.objects.get(project_id=project_id)
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    requirements = project.project_requirement.all()
+    r_info = []
+    for r in requirements:
+        r_info.append(r.to_json())
+    return JsonResponse({'errno': 0, 'msg': "需求列表查询成功", 'r_info': r_info})
