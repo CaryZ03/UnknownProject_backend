@@ -238,7 +238,7 @@ def show_member(request, user):
     else:
         return JsonResponse({'errno': 2072, 'msg': "未指定成员类型"})
     data = {"members": [
-        {"user_id": member.tm_user_id.user_id, "nickname": member.tm_user_nickname, "permission": member.tm_user_permissions, "join_time": member.tm_user_join_time, "real_name": member.tm_user_id.user_real_name, "address": member.tm_user_iduser_email
+        {"user_id": member.tm_user_id.user_id, "nickname": member.tm_user_nickname, "permission": member.tm_user_permissions, "join_time": member.tm_user_join_time, "real_name": member.tm_user_id.user_real_name, "address": member.tm_user_id.user_email
          } for member in members]}
     return JsonResponse({'errno': 0, 'data': data, 'msg': '查询成员列表成功'})
 
