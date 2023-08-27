@@ -186,7 +186,7 @@ def user_login(request):
         token_key = token.key
     else:
         token_key = create_token(user)
-    return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key})
+    return JsonResponse({'errno': 0, 'msg': "登录成功", 'uid': user.user_id, 'token_key': token_key, 'user_name': user.user_name})
 
 
 @csrf_exempt

@@ -238,7 +238,7 @@ def show_member(request, user):
     else:
         return JsonResponse({'errno': 2072, 'msg': "未指定成员类型"})
     data = {"members": [
-        {"user_id": member.tm_user_id.user_id, "nickname": member.tm_user_nickname, "permission": member.tm_user_permissions, "join_time": member.tm_user_join_time
+        {"user_id": member.tm_user_id.user_id, "nickname": member.tm_user_nickname, "permission": member.tm_user_permissions, "join_time": member.tm_user_join_time, "real_name": member.tm_user_id.user_real_name, "address": member.tm_user_id.user_email
          } for member in members]}
     return JsonResponse({'errno': 0, 'data': data, 'msg': '查询成员列表成功'})
 
@@ -451,3 +451,26 @@ def member_role(request, user):
         return JsonResponse({'errno': 2163, 'msg': "查询用户不在该团队"})
     team_member_show = TeamMember.objects.get(tm_team_id=team, tm_user_id=user_show)
     return JsonResponse({'errno': 0, 'msg': "查询用户角色成功", 'role': team_member_show.tm_user_permissions})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def quit_team(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2170, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2171, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
+    Team.team_member.remove(team_member)
+    if team_member.tm_user_permissions == 'creator':
+        return JsonResponse({'errno': 2172, 'msg': "创建者无法退出团队"})
+    if team_member.tm_user_permissions == 'manager':
+        user.user_managed_teams.remove(team)
+    else:
+        user.user_joined_teams.remove(team)
+    team_member.delete()
+    return JsonResponse({'errno': 0, 'msg': "退出团队成功"})
