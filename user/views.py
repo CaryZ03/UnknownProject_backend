@@ -291,8 +291,11 @@ def change_profile(request, user):
 @login_required
 @require_http_methods(['POST'])
 def check_team_list(request, user):
+    print(66666666)
     data_json = json.loads(request.body)
+    print(11111111)
     print(data_json)
+    print(11111211)
     choose = data_json.get('choose')
     if choose == 'created':
         teams = user.user_created_teams.all()
