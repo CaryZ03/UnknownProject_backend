@@ -8,6 +8,7 @@ from team.models import TeamMember
 class SavedDocument(Model):
     sd_id = AutoField(primary_key=True)
     sd_document = ForeignKey('Document', on_delete=CASCADE)
+    sd_file = FileField(upload_to='SavedDocument/', max_length=255, null=True)
     sd_saved_time = DateTimeField(auto_now_add=True)
 
 

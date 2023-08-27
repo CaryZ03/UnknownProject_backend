@@ -37,7 +37,7 @@ def send_(request, user):
 
 
 @csrf_exempt
-def send_notification_to_user(request):
+def private_send_notification_to_user(request):
     data_json = json.loads(request.body)
     user_id = data_json.get('user_id')
     message = data_json.get('message')
@@ -52,29 +52,31 @@ def send_notification_to_user(request):
     return JsonResponse({'errno': 0, 'msg': "hihi"})
 
 
-# @csrf_exempt
-# def send_notification_to_user(user_id, notification):
-#     channel_layer = get_channel_layer()
-#     async_to_sync(channel_layer.group_send)(
-#         "user_notification_receiver_" + str(user_id),
-#         {
-#             "type": "send.notification",
-#             "message": notification.to_json()
-#         }
-#     )
-#     return JsonResponse({'errno': 0, 'msg': "hihi"})
+@csrf_exempt
+def send_notification_to_user(user_id, notification):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "user_notification_receiver_" + str(user_id),
+        {
+            "type": "send.notification",
+            "notification": notification.to_json()
+        }
+    )
+    return JsonResponse({'errno': 0, 'msg': "hihi"})
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def group_send_notification_to_user(request):
     data_json = json.loads(request.body)
-    name = data_json.get('name')
-    content = data_json.get('content')
-    creator = data_json.get('creator')
+    notification = data_json.get('notification')
+    name = notification.get('name')
+    content = notification.get('content')
+    creator = notification.get('creator')
+    type = notification.get('type')
     receiver_list = data_json.get('receiver_list')
-    notification = Notification.objects.create(name=name, content=content, creator=creator)
     for user_id in receiver_list:
+        notification = Notification.objects.create(name=name, content=content, creator=creator)
         notification.notification_receiver.add(User.objects.get(user_id=user_id))
         send_notification_to_user(user_id, notification)
 
