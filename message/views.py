@@ -100,7 +100,7 @@ def check_notification_list(request):
     user_id = data_json.get('user_id')
     user = User.objects.get(user_id=user_id)
     notification_list_info = []
-    for notification in user.notification_list:
+    for notification in user.user_notification_list.all():
         notification_list_info.append(notification.to_json())
 
     return JsonResponse({'errno': 0, 'msg': "hihi", "notification_list_info": notification_list_info})
