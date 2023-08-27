@@ -27,7 +27,8 @@
 
             reader.onload = event => {
                 const data = event.target.result.split(',')[1];
-                socket.send(JSON.stringify({ data }));
+                const user_id = 1;
+                socket.send(JSON.stringify({ data, user_id }));
             };
 
             reader.readAsDataURL(file);

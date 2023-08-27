@@ -45,9 +45,8 @@ INSTALLED_APPS = [
     'document',
     'channels',
     'message',
+    'consumers',
 ]
-
-ASGI_APPLICATION = 'UnknownProject_backend.asgi.application'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -80,7 +79,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'UnknownProject_backend.wsgi.application'
-ASGI_APPLICATION = 'UnknownProject_backend.routing.application'
+ASGI_APPLICATION = 'UnknownProject_backend.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
@@ -99,6 +98,12 @@ DATABASES = {
         'PASSWORD': '123456',
         'HOST': '182.92.102.246',
         'PORT': '3306',
+        # "ATOMIC_REQUESTS": True,
+        # "POOL": {
+        #     "mincached": 5,
+        #     "maxcached": 50,
+        #     "blocking": True
+        # }
     }
 }
 

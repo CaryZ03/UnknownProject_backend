@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Chat Test</title>
+</head>
+<body>
+    <h1>WebSocket Chat Test</h1>
+
+    <div id="chat"></div>
+
+    <script>
+        const chatDiv = document.getElementById('chat');
+
+        const socket = new WebSocket('ws://182.92.86.71:4514/ws/chat/1/');
+
+        socket.onopen = (event) => {
+            chatDiv.innerHTML += '<p>Connected to the chat room.</p>';
+        };
+
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            chatDiv.innerHTML += `<p>${message.username}: ${message.message}</p>`;
+        };
+
+        socket.onclose = (event) => {
+            chatDiv.innerHTML += '<p>Connection closed.</p>';
+        };
+
+        function sendMessage() {
+            const username = prompt('Enter your username:');
+            const message = prompt('Enter your message:');
+            const data = {
+                username: username,
+                message: message
+            };
+            socket.send(JSON.stringify(data));
+        }
+    </script>
+</body>
+</html>

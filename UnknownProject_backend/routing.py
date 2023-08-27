@@ -3,7 +3,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import path
 
 from chat import routing as chatroom_routing
-from consumers.AvatarConsumer import UserAvatarConsumer
+from consumers.AvatarConsumer import UserAvatarConsumer, UserNotificationConsumer
 from editor.consumers import DocumentConsumer
 
 application = ProtocolTypeRouter({
@@ -11,7 +11,7 @@ application = ProtocolTypeRouter({
         [
             path("ws/document/<str:document_id>/", DocumentConsumer),
             path("ws/upload/avatar/user/", UserAvatarConsumer),
-            # path("ws/document/<str:document_id>/", DocumentConsumer),
+            path("ws/notification/receiver/<int:user_id>/", UserNotificationConsumer),
         ] + chatroom_routing.websocket_urlpatterns,
 
     ),
