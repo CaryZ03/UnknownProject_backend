@@ -99,6 +99,7 @@ DATABASES = {
         'HOST': '182.92.102.246',
         'PORT': '3306',
         "ATOMIC_REQUESTS": True,
+        "CHARSET": "utf8",
         "POOL": {
             "mincached": 5,
             "maxcached": 50,
