@@ -434,3 +434,24 @@ def change_nickname(request, user):
     team_member.tm_user_nickname = nickname
     team_member.save()
     return JsonResponse({'errno': 0, 'msg': "修改团队昵称成功"})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def member_role(request, user):
+    data_json = json.loads(request.body)
+    team_id = data_json.get('team_id')
+    user_id = data_json.get('user_id')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2160, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2161, 'msg': "当前用户不在该团队内"})
+    if not User.objects.filter(user_id=user_id).exists():
+        return JsonResponse({'errno': 2162, 'msg': "该用户不存在"})
+    user_show = User.objects.get(user_id=user_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user_show).exists():
+        return JsonResponse({'errno': 2163, 'msg': "查询用户不在该团队"})
+    team_member_show = TeamMember.objects.get(tm_team_id=team, tm_user_id=user_show)
+    return JsonResponse({'errno': 0, 'msg': "查询用户角色成功", 'role': team_member_show.tm_user_permissions})
