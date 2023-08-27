@@ -171,8 +171,7 @@ def user_register(request):
     if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
         return JsonResponse({'errno': 1144, 'msg': "真实姓名不合法"})
     else:
-        new_user = User.objects.create(user_email=email, user_password=password1)
-        new_user.user_name = new_user.user_id
+        new_user = User.objects.create(user_email=email, user_password=password1, user_name=nickname, user_real_name=realname)
         new_user.save()
         return JsonResponse({'errno': 0, 'msg': "注册成功"})
 
