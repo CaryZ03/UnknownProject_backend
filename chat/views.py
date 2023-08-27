@@ -75,7 +75,7 @@ def store_message(request):
     team_id = data.get('team_id')
     is_at = data.get('is_at')
     is_at_all = data.get('is_at_all')
-    array_data = data.get('arrayData', [])
+    array_data = data.get('array_data', [])
 
     user = User.objects.get(user_id=user_id)
     team = Team.objects.get(team_id=team_id)
