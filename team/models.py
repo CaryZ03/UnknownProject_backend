@@ -28,6 +28,7 @@ class Team(Model):
             "team_tel": self.team_tel,
             "team_create_time": self.team_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "team_creator": self.team_creator.user_name,
+            "team_avatar": self.team_avatar.url if self.team_avatar else None,
         }
         return json.dumps(info)
 

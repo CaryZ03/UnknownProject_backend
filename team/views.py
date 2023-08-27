@@ -474,3 +474,15 @@ def quit_team(request, user):
         user.user_joined_teams.remove(team)
     team_member.delete()
     return JsonResponse({'errno': 0, 'msg': "退出团队成功"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_team_by_name(request):
+    data_json = json.loads(request.body)
+    team_name_part = data_json.get('team_name_part')
+    matching_teams = Team.objects.filter(team_name__contains=team_name_part)
+    matching_teams_info = []
+    for team in matching_teams:
+        matching_teams_info.append(team.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回团队信息列表成功', 'matching_teams_info': matching_teams_info})

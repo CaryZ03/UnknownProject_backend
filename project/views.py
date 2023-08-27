@@ -401,3 +401,23 @@ def check_requirement_list(request, user):
     for r in requirements:
         r_info.append(r.to_json())
     return JsonResponse({'errno': 0, 'msg': "需求列表查询成功", 'r_info': r_info})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def search_project_by_name(request, user):
+    data_json = json.loads(request.body)
+    project_name_part = data_json.get('project_name_part')
+    team_id = data_json.get('team_id')
+    if not Team.objects.filter(team_id=team_id).exists():
+        return JsonResponse({'errno': 2180, 'msg': "该团队不存在"})
+    team = Team.objects.get(team_id=team_id)
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 2181, 'msg': "当前用户不在该团队内"})
+    matching_projects = Project.oobjects.filter(project_name__contains=project_name_part)
+    matching_projects_info = []
+    for project in matching_projects:
+        if project.project_team == team:
+            matching_projects_info.append(project.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回项目信息列表成功', 'matching_projects_info': matching_projects_info})
