@@ -113,6 +113,7 @@ def get_team_chat_history(request):
         message_info = {
             "message": message.cm_content,
             "user_id": message.cm_from.user_id,
+            "user_name": message.cm_from.user_name,
             "cm_create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "is_at": message.cm_isat,
             "is_at_all": message.cm_at_all,
