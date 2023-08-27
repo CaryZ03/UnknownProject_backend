@@ -292,6 +292,7 @@ def change_profile(request, user):
 @require_http_methods(['POST'])
 def check_team_list(request, user):
     data_json = json.loads(request.body)
+    print(data_json)
     choose = data_json.get('choose')
     if choose == 'created':
         teams = user.user_created_teams.all()

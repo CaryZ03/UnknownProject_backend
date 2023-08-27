@@ -14,6 +14,7 @@ from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from .models import Notification
 
 
 @csrf_exempt
@@ -36,25 +37,43 @@ def send_(request, user):
 
 
 @csrf_exempt
-def send_notification_to_user(user_id, notification):
+def send_notification_to_user(request):
+    data_json = json.loads(request.body)
+    user_id = data_json.get('user_id')
+    message = data_json.get('message')
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         "user_notification_receiver_" + str(user_id),
         {
             "type": "send.notification",
-            "message": notification.to_json()
+            "message": message
         }
     )
     return JsonResponse({'errno': 0, 'msg': "hihi"})
+
+
+# @csrf_exempt
+# def send_notification_to_user(user_id, notification):
+#     channel_layer = get_channel_layer()
+#     async_to_sync(channel_layer.group_send)(
+#         "user_notification_receiver_" + str(user_id),
+#         {
+#             "type": "send.notification",
+#             "message": notification.to_json()
+#         }
+#     )
+#     return JsonResponse({'errno': 0, 'msg': "hihi"})
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def group_send_notification_to_user(request):
     data_json = json.loads(request.body)
-    receiver_list = data_json.get('receiver_list')
-
-    receiver_list, notification
+    name = data_json.get('name')
+    content = data_json.get('content')
+    creator = data_json.get('creator')
+    receiver = data_json.get('receiver')
+    notification = Notification.objects.create(name=name, content=content, creator=creator)
     for user_id in receiver_list:
         send_notification_to_user(user_id, notification)
     return JsonResponse({'errno': 0, 'msg': "hihi"})

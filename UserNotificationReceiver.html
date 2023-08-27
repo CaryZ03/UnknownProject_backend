@@ -19,7 +19,8 @@
       const notification = JSON.parse(event.data);
       console.log('Received notification:', notification);
 
-      // 在这里可以处理通知，更新用户界面等
+      // 使用 alert 函数在窗口中弹出提示框
+      alert('New notification: ' + notification);
     };
 
     socket.onclose = function(event) {
