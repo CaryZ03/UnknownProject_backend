@@ -29,7 +29,7 @@
 #
 #     async def receive(self, text_data):
 #         # 这里可以处理前端发送的消息
-#         await self.send(text_data=json.dumps({'message': 'File uploaded successfully.'}))
+#         pass
 #
 #     async def send_notification(self, event):
 #         # 发送通知给用户的 WebSocket 连接
