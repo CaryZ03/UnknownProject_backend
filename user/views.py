@@ -405,3 +405,14 @@ def check_profile(request):
         return JsonResponse({'errno': 0, 'msg': '返回部分用户信息成功', 'visible': 'False', 'user_name': user.user_name, 'user_avatar': user_avatar, 'user_signature': user.user_signature})
 
 
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_user_by_username(request):
+    data_json = json.loads(request.body)
+    user_name_part = data_json.get('user_name_part')
+    matching_users = User.objects.filter(user_name__contains=user_name_part)
+    matching_users_info = []
+    for user in matching_users:
+        if user.user_visible:
+            matching_users_info.append(user.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回用户信息列表成功', 'user_info': matching_users_info})
