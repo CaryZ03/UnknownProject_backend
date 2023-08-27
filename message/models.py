@@ -30,6 +30,8 @@ class Notification(Model):
         ('system', "系统信息")
     )
     notification_type = CharField(max_length=20, choices=notification_type_choices, default='system')
+    notification_checked = BooleanField(default=False)
+    notification_message = ForeignKey(ChatMessage, on_delete=SET_NULL, null=True)
 
     def to_json(self):
         info = {
@@ -38,6 +40,8 @@ class Notification(Model):
             "notification_content": self.notification_content,
             "notification_create_time": self.notification_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "notification_creator": self.notification_creator.user_name,
-            "notification_receiver": self.notification_receiver.user_id
+            "notification_receiver": self.notification_receiver.user_id,
+            "notification_checked": self.notification_checked,
+            "notification_message": self.notification_message.cm_id
         }
         return json.dumps(info)

@@ -94,14 +94,9 @@ def group_send_notification_to_user(request):
 @require_http_methods(['POST'])
 def check_notification_list(request):
     data_json = json.loads(request.body)
-    notification = data_json.get('notification')
-    name = notification.get('name')
-    content = notification.get('content')
-    creator_id = notification.get('creator_id')
-    creator = User.objects.get(user_id=creator_id)
-    type = notification.get('type')
-    receiver_list = data_json.get('receiver_list')
-    for user_id in receiver_list:
+    user_id = data_json.get('user_id')
+    user = User.objects.get
+    for notification in receiver_list:
         notification = Notification.objects.create(
             notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
         print(user_id)
