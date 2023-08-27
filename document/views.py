@@ -1,11 +1,11 @@
-from django.shortcuts import render
-from django.views.decorators.http import require_http_methods
 from team.models import *
 from message.models import *
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import File, Document, SavedDocument
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+from django.http.response import JsonResponse
+import json
 
 
 @csrf_exempt
@@ -66,3 +66,27 @@ def download_saved_document(request):
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
 
     return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.', 'document_id': document.document_id})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_document_all(request):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    document = Document.objects.get(document_id=document_id)
+    document.delete()
+
+    return JsonResponse({'errno': 0, 'message': 'File deleted successfully.'})
+
+
+# @csrf_exempt
+# @require_http_methods(['POST'])
+# def callback_document(request):
+#     data = json.loads(request.body)
+#     document_id = data.get('document_id')
+#     savedDocument_id = data.get('savedDocument_id')
+#     document = Document.objects.get(document_id=document_id)
+#     saves = document.document_saves.
+#     document.delete()
+#
+#     return JsonResponse({'errno': 0, 'message': 'File deleted successfully.'})
