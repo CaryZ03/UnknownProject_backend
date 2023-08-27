@@ -103,6 +103,7 @@ DATABASES = {
         "POOL": {
             "mincached": 5,
             "maxcached": 50,
+            "blocking": True
         }
     }
 }
