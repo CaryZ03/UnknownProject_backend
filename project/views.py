@@ -26,7 +26,6 @@ def create_project(request, user):
     team_id = data_json.get('team_id')
     name = data_json.get('name')
     description = data_json.get('description')
-    avatar = data_json.get('data')
     estimated_start_time = data_json.get('estimated_start_time')
     estimated_end_time = data_json.get('estimated_end_time')
     if not Team.objects.filter(team_id=team_id).exists():
@@ -46,9 +45,6 @@ def create_project(request, user):
     new_project = Project.objects.create(project_name=name, project_description=description, project_creator=team_member, project_team=team)
     team.team_projects.add(new_project)
     user.user_created_projects.add(new_project)
-    if avatar:
-        image = ContentFile(base64.b64decode(avatar), name=f"{new_project.project_id}.png")
-        new_project.project_avatar.save(image.name, image)
     new_project.project_estimated_end_time = estimated_end_time
     new_project.project_estimated_start_time = estimated_start_time
     new_project.save()
@@ -155,6 +151,29 @@ def change_profile(request, user):
     project.project_recycle = recycle
     project.save()
     return JsonResponse({'errno': 0, 'msg': "项目信息修改成功"})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_avatar(request, user):
+    data_json = json.loads(request.body)
+    project_id = data_json.get('project_id')
+    if not Project.objects.filter(project_id=project_id).exists():
+        return JsonResponse({'errno': 3060, 'msg': "该项目不存在"})
+    project = Project.objects.get(project_id=project_id)
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3061, 'msg': "当前用户不在该团队内"})
+    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
+    if project.project_recycle:
+        return JsonResponse({'errno': 3033, 'msg': '项目在回收站无法操作'})
+    if project.project_creator != team_member:
+        return JsonResponse({'errno': 3034, 'msg': "当前用户不是该项目创建者，无法改变项目"})
+    relative_image_path = f'avatar/project/{project.project_id}.png'
+    project.project_avatar.name = relative_image_path
+    project.save()
+    return JsonResponse({'errno': 0, 'msg': "团队头像上传成功"})
 
 
 @csrf_exempt

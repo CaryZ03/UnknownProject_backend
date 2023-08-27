@@ -70,7 +70,6 @@ class TeamApplicant(Model):
 
 class TeamChat(Model):
     tc_id = AutoField(primary_key=True)
-    tc_name = CharField(max_length=100)
     tc_team = ForeignKey(Team, on_delete=CASCADE, null=True)
     tc_history = ManyToManyField('message.ChatMessage')
 

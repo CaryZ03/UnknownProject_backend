@@ -12,6 +12,8 @@ from team.models import Team, TeamMember, TeamApplicant
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 @csrf_exempt
@@ -33,18 +35,27 @@ def send_(request, user):
     return JsonResponse({'errno': 0, 'msg': team.team_key})
 
 
-# @csrf_exempt
-# @require_http_methods(['POST'])
-# def send_notification_to_user(request):
-#     data_json = json.loads(request.body)
-#     user_id = data_json.get('user_id')
-#     message = data_json.get('message')
-#     channel_layer = get_channel_layer()
-#     async_to_sync(channel_layer.group_send)(
-#         "user_notification_receiver_" + user_id,
-#         {
-#             "type": "send.notification",
-#             "message": message
-#         }
-#     )
+@csrf_exempt
+def send_notification_to_user(user_id, notification):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        "user_notification_receiver_" + str(user_id),
+        {
+            "type": "send.notification",
+            "message": notification.to_json()
+        }
+    )
+    return JsonResponse({'errno': 0, 'msg': "hihi"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def group_send_notification_to_user(request):
+    data_json = json.loads(request.body)
+    receiver_list = data_json.get('receiver_list')
+
+    receiver_list, notification
+    for user_id in receiver_list:
+        send_notification_to_user(user_id, notification)
+    return JsonResponse({'errno': 0, 'msg': "hihi"})
 
