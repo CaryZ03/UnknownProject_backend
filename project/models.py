@@ -30,10 +30,10 @@ class Project(Model):
     def to_json(self):
         info = {
             "project_id": self.project_id,
-            "project_name": self.project_name,
+            "name": self.project_name,
             "project_description": self.project_description,
-            "project_create_time": self.project_create_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "project_creator": self.project_creator.tm_user_nickname if self.project_creator else None,
+            "date": self.project_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "person": self.project_creator.tm_user_nickname if self.project_creator else None,
             "project_estimated_start_time": self.project_estimated_start_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.project_estimated_start_time else None,
             "project_estimated_end_time": self.project_estimated_end_time.strftime("%Y-%m-%d %H:%M:%S")
