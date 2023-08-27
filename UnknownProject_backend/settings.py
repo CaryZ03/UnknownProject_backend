@@ -102,7 +102,7 @@ DATABASES = {
         "ATOMIC_REQUESTS": True,
         "POOL": {
             "mincached": 5,
-            "maxcached ": 50,
+            "maxcached": 50,
         }
     }
 }
