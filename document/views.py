@@ -14,7 +14,8 @@ def upload_file(request):
     uploaded_file = request.FILES['file']
     file_obj = File(file_content=uploaded_file)
     file_obj.save()
-    return JsonResponse({'message': 'File uploaded successfully.'})
+    return JsonResponse({'message': 'File uploaded successfully.',
+                         'file_id': file_obj.file_id})
 
 
 @csrf_exempt
