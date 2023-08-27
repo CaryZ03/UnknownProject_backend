@@ -79,14 +79,45 @@ def delete_document_all(request):
     return JsonResponse({'errno': 0, 'message': 'File deleted successfully.'})
 
 
-# @csrf_exempt
-# @require_http_methods(['POST'])
-# def callback_document(request):
-#     data = json.loads(request.body)
-#     document_id = data.get('document_id')
-#     savedDocument_id = data.get('savedDocument_id')
-#     document = Document.objects.get(document_id=document_id)
-#     saves = document.document_saves.
-#     document.delete()
-#
-#     return JsonResponse({'errno': 0, 'message': 'File deleted successfully.'})
+@csrf_exempt
+@require_http_methods(['POST'])
+def callback_document(request):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    savedDocument_id = data.get('savedDocument_id')
+    document = Document.objects.get(document_id=document_id)
+    saves = document.document_saves.all()
+    for s in saves:
+        if s.sd_id > savedDocument_id:
+            s.delete()
+
+    recent_save = document.document_saves.last()
+    response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
+
+    return JsonResponse({'errno': 0, 'message': 'File callback successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def show_save(request):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    document = Document.objects.get(document_id=document_id)
+    saves = document.document_saves.all()
+
+    s_info = []
+    for s in saves:
+        s_info.append(s.sd_id)
+    return JsonResponse({'errno': 0, 'message': 'File callback successfully.', 's_info': s_info})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_save(request):
+    data = json.loads(request.body)
+    save_id = data.get('save_id')
+    recent_save = SavedDocument.objects.create(sd_id=save_id)
+    response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
+    return JsonResponse({'errno': 0, 'message': 'File callback successfully.'})
