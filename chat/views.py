@@ -103,7 +103,7 @@ def store_message(request):
     new_chat_message.save()
     history.add(new_chat_message)
     team_chat.save()
-    return JsonResponse({'errno': 0, 'msg': "插入消息成功"})
+    return JsonResponse({'cm_id': new_chat_message.cm_id, 'msg': "插入消息成功"})
 
 
 @csrf_exempt
