@@ -9,7 +9,7 @@ class Project(Model):
     project_id = AutoField(primary_key=True)
     project_name = CharField(max_length=100)
     project_description = TextField(null=True)
-    project_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    project_avatar = ImageField(upload_to='avatar/project/', max_length=225, blank=True, null=True)
     project_create_time = DateTimeField(auto_now_add=True, null=True)
     project_estimated_start_time = DateTimeField(null=True)
     project_estimated_end_time = DateTimeField(null=True)

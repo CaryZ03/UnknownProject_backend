@@ -18,7 +18,7 @@ class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
     document_description = TextField(null=True)
-    document_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    document_avatar = ImageField(upload_to='avatar/document/', max_length=225, blank=True, null=True)
     document_create_time = DateTimeField(auto_now_add=True)
     document_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
     document_editors = ManyToManyField('Editor', related_name='document_members')

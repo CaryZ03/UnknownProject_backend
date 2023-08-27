@@ -9,7 +9,7 @@ class User(Model):
     user_real_name = CharField(max_length=100, null=True)
     user_password = CharField(max_length=20)
     user_signature = TextField(null=True)
-    user_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    user_avatar = ImageField(upload_to='avatar/user/', max_length=225, blank=True, null=True)
     user_email = EmailField(max_length=50, default=None, blank=True, null=False)
     user_tel = TextField(null=True)
     user_expire_time = IntegerField(null=True, default=30)

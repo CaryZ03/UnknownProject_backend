@@ -11,7 +11,7 @@ class Team(Model):
     team_key_expire_time = DateTimeField(null=True, auto_now_add=True)
     team_name = CharField(max_length=100)
     team_description = TextField(null=True)
-    team_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
+    team_avatar = ImageField(upload_to='avatar/team/', max_length=225, blank=True, null=True)
     team_tel = TextField(null=True)
     team_create_time = DateTimeField(null=True, auto_now_add=True)
     team_creator = ForeignKey(User, on_delete=SET_NULL, null=True)
@@ -71,7 +71,6 @@ class TeamApplicant(Model):
 class TeamChat(Model):
     tc_id = AutoField(primary_key=True)
     tc_name = CharField(max_length=100)
-    tc_avatar = ImageField(upload_to='avatar/', max_length=225, blank=True, null=True)
     tc_team = ForeignKey(Team, on_delete=CASCADE, null=True)
     tc_history = ManyToManyField('message.ChatMessage')
 
