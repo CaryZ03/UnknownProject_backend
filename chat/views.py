@@ -76,6 +76,7 @@ def store_message(request):
     team_id = data.get('team_id')
     is_at = data.get('is_at')
     is_at_all = data.get('is_at_all')
+    message_type = data.get('message_type')
     array_data = data.get('array_data', [])
 
     user = User.objects.get(user_id=user_id)
@@ -84,15 +85,15 @@ def store_message(request):
     history = team_chat.tc_history
 
     if is_at:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at, cm_type=message_type)
         for at_id in array_data:
             at_user = User.objects.get(user_id=at_id)
             at_team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=at_user)
             new_chat_message.cm_at.add(at_team_member)
     elif is_at_all:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all, cm_type=message_type)
     else:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
     new_chat_message.save()
     history.add(new_chat_message)
     team_chat.save()
@@ -117,6 +118,7 @@ def get_team_chat_history(request):
             "cm_create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "is_at": message.cm_isat,
             "is_at_all": message.cm_at_all,
+            "message_type": message.cm_type,
             "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
         }
         message_list.append(message_info)
