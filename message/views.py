@@ -53,13 +53,14 @@ def private_send_notification_to_user(request):
 
 
 @csrf_exempt
-async def send_notification_to_user(user_id, notification):
+def send_notification_to_user(user_id, notification):
     channel_layer = get_channel_layer()
-    await channel_layer.group_send(
+    print(22222)
+    async_to_sync(channel_layer.group_send)(
         "user_notification_receiver_" + str(user_id),
         {
             "type": "send.notification",
-            "notification": notification.to_json()
+            "message": notification.to_json()
         }
     )
     return
@@ -67,7 +68,7 @@ async def send_notification_to_user(user_id, notification):
 
 @csrf_exempt
 @require_http_methods(['POST'])
-async def group_send_notification_to_user(request):
+def group_send_notification_to_user(request):
     data_json = json.loads(request.body)
     notification = data_json.get('notification')
     name = notification.get('name')
@@ -80,8 +81,34 @@ async def group_send_notification_to_user(request):
         notification = Notification.objects.create(
             notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
         print(user_id)
-        notification.notification_receiver = User.objects.get(user_id=user_id)
-        await send_notification_to_user(user_id, notification)
+        receiver = User.objects.get(user_id=user_id)
+        notification.notification_receiver = receiver
+        notification.save()
+        receiver.user_notification_list.add(notification)
+        send_notification_to_user(user_id, notification)
 
     return JsonResponse({'errno': 0, 'msg': "hihi"})
 
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def check_notification_list(request):
+    data_json = json.loads(request.body)
+    notification = data_json.get('notification')
+    name = notification.get('name')
+    content = notification.get('content')
+    creator_id = notification.get('creator_id')
+    creator = User.objects.get(user_id=creator_id)
+    type = notification.get('type')
+    receiver_list = data_json.get('receiver_list')
+    for user_id in receiver_list:
+        notification = Notification.objects.create(
+            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
+        print(user_id)
+        receiver = User.objects.get(user_id=user_id)
+        notification.notification_receiver = receiver
+        notification.save()
+        receiver.user_notification_list.add(notification)
+        send_notification_to_user(user_id, notification)
+
+    return JsonResponse({'errno': 0, 'msg': "hihi"})

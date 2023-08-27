@@ -26,6 +26,7 @@ class User(Model):
             "user_name": self.user_name,
             "user_real_name": self.user_real_name,
             "user_signature": self.user_signature,
+            "user_avatar": self.user_avatar.url if self.user_avatar else None,
             "user_email": self.user_email,
             "user_tel": self.user_tel
         }
