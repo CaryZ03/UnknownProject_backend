@@ -109,12 +109,18 @@ def user_register_check(request):
     email = data_json.get('email')
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
+    nickname = data_json.get('nickname')
+    realname = data_json.get('realname')
     if User.objects.filter(user_email=email).exists():
         return JsonResponse({'errno': 1010, 'msg': "该邮箱已存在注册用户"})
-    elif password1 != password2:
+    if password1 != password2:
         return JsonResponse({'errno': 1011, 'msg': "两次输入的密码不同"})
-    elif not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
-        return JsonResponse({'errno': 1012, 'msg': "密码不合法"})
+    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+        return JsonResponse({'errno': 1012, 'msg': "用户名不合法"})
+    if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
+        return JsonResponse({'errno': 1013, 'msg': "真实姓名不合法"})
+    if not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
+        return JsonResponse({'errno': 1014, 'msg': "密码不合法"})
     else:
         return JsonResponse({'errno': 0, 'msg': "信息验证成功"})
 
@@ -152,15 +158,20 @@ def user_register(request):
     email = data_json.get('email')
     password1 = data_json.get('password1')
     password2 = data_json.get('password2')
+    nickname = data_json.get('nickname')
+    realname = data_json.get('realname')
     if User.objects.filter(user_email=email).exists():
         return JsonResponse({'errno': 1040, 'msg': "该邮箱已存在注册用户"})
-    elif password1 != password2:
+    if password1 != password2:
         return JsonResponse({'errno': 1041, 'msg': "两次输入的密码不同"})
-    elif not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
+    if not bool(re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1))):
         return JsonResponse({'errno': 1042, 'msg': "密码不合法"})
+    if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(nickname))):
+        return JsonResponse({'errno': 1143, 'msg': "用户名不合法"})
+    if not bool(re.match("^[A-Za-z]{2,29}$", str(realname))):
+        return JsonResponse({'errno': 1144, 'msg': "真实姓名不合法"})
     else:
-        new_user = User.objects.create(user_email=email, user_password=password1)
-        new_user.user_name = new_user.user_id
+        new_user = User.objects.create(user_email=email, user_password=password1, user_name=nickname, user_real_name=realname)
         new_user.save()
         return JsonResponse({'errno': 0, 'msg': "注册成功"})
 
@@ -269,7 +280,7 @@ def change_profile(request, user):
     expire_time = data_json.get('expire_time')
     if not bool(re.match("^[A-Za-z0-9][A-Za-z0-9_]{2,29}$", str(username))):
         return JsonResponse({'errno': 1110, 'msg': "用户名不合法"})
-    if not bool(re.match("^[A-Za-z]{2,29}$", str(username))):
+    if not bool(re.match("^[A-Za-z]{2,29}$", str(real_name))):
         return JsonResponse({'errno': 1111, 'msg': "真实姓名不合法"})
     elif password1 != password2:
         return JsonResponse({'errno': 1112, 'msg': "两次输入的密码不同"})
