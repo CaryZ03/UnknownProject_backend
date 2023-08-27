@@ -14,7 +14,7 @@ from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .models import Notification
+from .models import Notification, ChatMessage
 
 
 @csrf_exempt
@@ -75,11 +75,14 @@ def group_send_notification_to_user(request):
     content = notification.get('content')
     creator_id = notification.get('creator_id')
     creator = User.objects.get(user_id=creator_id)
+    cm_id = notification.get('cm_id')
+    chat_message = ChatMessage.objects.get(cm_id=cm_id)
     type = notification.get('type')
     receiver_list = data_json.get('receiver_list')
     for user_id in receiver_list:
         notification = Notification.objects.create(
-            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
+            notification_name=name, notification_content=content,
+            notification_creator=creator, notification_type=type, notification_message=chat_message)
         print(user_id)
         receiver = User.objects.get(user_id=user_id)
         notification.notification_receiver = receiver
