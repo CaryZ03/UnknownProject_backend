@@ -17,6 +17,7 @@ urlpatterns = [
     path('check_member', check_member, name='check_member'),
     path('join_team_url', join_team_url, name='join_team_url'),
     path('join_team_straight', join_team_straight, name='join_team_straight'),
+    path('quit_team', quit_team, name='quit_team'),
     path('change_nickname', change_nickname, name='change_nickname'),
     path('member_role', member_role, name='member_role'),
 ]
