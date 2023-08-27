@@ -11,6 +11,7 @@ from datetime import timedelta
 from user.models import *
 from team.models import *
 from message.models import *
+from document.models import *
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
@@ -94,6 +95,11 @@ def store_message(request):
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all, cm_type=message_type)
     else:
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
+
+    if message_type == 'file':
+        file_id = data.get('file_id')
+        file = File.objects.get(file_id=file_id)
+        new_chat_message.cm_file = file
     new_chat_message.save()
     history.add(new_chat_message)
     team_chat.save()
@@ -111,6 +117,10 @@ def get_team_chat_history(request):
 
     message_list = []
     for message in chat_messages:
+        if message.cm_type == 'file':
+            file_id = message.cm_file.file_id
+        else:
+            file_id = 0
         message_info = {
             "message": message.cm_content,
             "user_id": message.cm_from.user_id,
@@ -119,6 +129,7 @@ def get_team_chat_history(request):
             "is_at": message.cm_isat,
             "is_at_all": message.cm_at_all,
             "message_type": message.cm_type,
+            "file_id": file_id,
             "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
         }
         message_list.append(message_info)
