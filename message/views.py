@@ -98,15 +98,9 @@ def group_send_notification_to_user(request):
 def check_notification_list(request):
     data_json = json.loads(request.body)
     user_id = data_json.get('user_id')
-    user = User.objects.get
-    for notification in receiver_list:
-        notification = Notification.objects.create(
-            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
-        print(user_id)
-        receiver = User.objects.get(user_id=user_id)
-        notification.notification_receiver = receiver
-        notification.save()
-        receiver.user_notification_list.add(notification)
-        send_notification_to_user(user_id, notification)
+    user = User.objects.get(user_id=user_id)
+    notification_list_info = []
+    for notification in user.notification_list:
+        notification_list_info.append(notification.to_json())
 
-    return JsonResponse({'errno': 0, 'msg': "hihi"})
+    return JsonResponse({'errno': 0, 'msg': "hihi", "notification_list_info": notification_list_info})
