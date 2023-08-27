@@ -18,5 +18,6 @@ urlpatterns = [
     path('upload_email_check', upload_email_check, name='upload_email_check'),
     path('upload_email', upload_email, name='upload_email'),
     path('deploy_test', deploy_test, name='deploy_test'),
+    path('check_token', check_token, name='check_token'),
     path('check_team_list/<str:tm_list_type>', check_team_list, name='check_team_list'),
 ]
