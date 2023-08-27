@@ -1,6 +1,8 @@
 # chatroom/consumers.py
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from team.models import *
+from message.models import *
 from user.models import User
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -27,15 +29,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
         user_id = text_data_json['user_id']
         user_name = text_data_json['user_name']
-
+        array_data = text_data_json.get('arrayData', [])
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
                 'user_id': user_id,
-                'user_name': user_name
-
+                'user_name': user_name,
+                'array_data': array_data
             }
         )
 
@@ -43,9 +45,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         user_id = event['user_id']
         user_name = event['user_name']
         message = event['message']
+        array_data = event['array_data']
         await self.send(text_data=json.dumps({
             'user_id': user_id,
             'user_name': user_name,
             'message': message,
+            'array_data': array_data
         }))
 
