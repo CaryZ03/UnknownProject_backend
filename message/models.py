@@ -14,6 +14,7 @@ class ChatMessage(Model):
     cm_at_all = BooleanField(default=False)
     cm_at = ManyToManyField(TeamMember)
     cm_type = CharField(max_length=100, default='message')
+    cm_file = ForeignKey('document.File', on_delete=SET_NULL, null=True)
 
 
 class Notification(Model):
@@ -35,8 +36,8 @@ class Notification(Model):
             "notification_id": self.notification_id,
             "notification_name": self.notification_name,
             "notification_content": self.notification_content,
-            "notification_create_time": self.notification_create_time,
-            "notification_creator": self.notification_creator,
-            "notification_receiver": self.notification_receiver
+            "notification_create_time": self.notification_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "notification_creator": self.notification_creator.user_name,
+            "notification_receiver": self.notification_receiver.user_id
         }
         return json.dumps(info)

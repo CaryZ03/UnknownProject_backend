@@ -53,32 +53,35 @@ def private_send_notification_to_user(request):
 
 
 @csrf_exempt
-def send_notification_to_user(user_id, notification):
+async def send_notification_to_user(user_id, notification):
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
+    await channel_layer.group_send(
         "user_notification_receiver_" + str(user_id),
         {
             "type": "send.notification",
             "notification": notification.to_json()
         }
     )
-    return JsonResponse({'errno': 0, 'msg': "hihi"})
+    return
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def group_send_notification_to_user(request):
+async def group_send_notification_to_user(request):
     data_json = json.loads(request.body)
     notification = data_json.get('notification')
     name = notification.get('name')
     content = notification.get('content')
-    creator = notification.get('creator')
+    creator_id = notification.get('creator_id')
+    creator = User.objects.get(user_id=creator_id)
     type = notification.get('type')
     receiver_list = data_json.get('receiver_list')
     for user_id in receiver_list:
-        notification = Notification.objects.create(name=name, content=content, creator=creator)
-        notification.notification_receiver.add(User.objects.get(user_id=user_id))
-        send_notification_to_user(user_id, notification)
+        notification = Notification.objects.create(
+            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
+        print(user_id)
+        notification.notification_receiver = User.objects.get(user_id=user_id)
+        await send_notification_to_user(user_id, notification)
 
     return JsonResponse({'errno': 0, 'msg': "hihi"})
 
