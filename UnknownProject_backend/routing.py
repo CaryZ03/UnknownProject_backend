@@ -9,9 +9,9 @@ from editor.consumers import DocumentConsumer
 application = ProtocolTypeRouter({
     "websocket": URLRouter(
         [
-            path("ws/document/<str:document_id>/", DocumentConsumer),
+            # path("ws/document/<str:document_id>/", DocumentConsumer),
             path("ws/upload/avatar/user/", UserAvatarConsumer),
-            path("ws/notification/receiver/<int:user_id>/", UserNotificationConsumer),
+            # path("ws/notification/receiver/<int:user_id>/", UserNotificationConsumer),
         ] + chatroom_routing.websocket_urlpatterns,
 
     ),

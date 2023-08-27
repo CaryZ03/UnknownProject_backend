@@ -38,3 +38,6 @@ class UserAvatarConsumer(AsyncWebsocketConsumer):
             f.write(decoded_data)
 
         await self.send(text_data=json.dumps({'message': 'File uploaded successfully.'}))
+
+    async def send(self, text_data):
+        pass
