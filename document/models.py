@@ -45,7 +45,7 @@ class File(Model):
 class Prototype(Model):
     prototype_id = AutoField(primary_key=True)
     prototype_name = CharField(max_length=100)
-    prototype_project = ForeignKey('project.project', on_delete=CASCADE)
+    prototype_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     prototype_creator = ForeignKey('user.User', on_delete=CASCADE)
     prototype_file = FileField(upload_to='prototype/', max_length=255)
 
