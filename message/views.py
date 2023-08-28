@@ -104,3 +104,20 @@ def check_notification_list(request):
         notification_list_info.append(notification.to_json())
 
     return JsonResponse({'errno': 0, 'msg': "hihi", "notification_list_info": notification_list_info})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def post_skip_info(request):
+    data = json.loads(request.body)
+    notification_id = data.get('notification_id')
+    notification = Notification.objects.get(notification_id=notification_id)
+    message = notification.notification_message
+    team = message.cm_from.team_set.first()
+
+    info = {
+        "team_id": team.team_id,
+        "cm_id": message.cm_id
+    }
+
+    return JsonResponse(info)

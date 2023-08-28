@@ -122,6 +122,7 @@ def get_team_chat_history(request):
         else:
             file_id = 0
         message_info = {
+            "cm_id": message.cm_id,
             "message": message.cm_content,
             "user_id": message.cm_from.user_id,
             "user_name": message.cm_from.user_name,

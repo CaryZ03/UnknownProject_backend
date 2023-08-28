@@ -179,26 +179,31 @@ def change_avatar(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def add_recycle(request, user):
+def change_recycle_status(request, user):
     data_json = json.loads(request.body)
     team_id = data_json.get('team_id')
     project_id = data_json.get('project_id')
+    status = data_json.get('status')
     if not Team.objects.filter(team_id=team_id).exists():
-        return JsonResponse({'errno': 3010, 'msg': "该团队不存在"})
+        return JsonResponse({'errno': 3140, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 3011, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 3141, 'msg': "当前用户不在该团队内"})
     if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 3012, 'msg': "该项目不存在"})
+        return JsonResponse({'errno': 3142, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
-    if project.project_recycle:
-        return JsonResponse({'errno': 3013, 'msg': '项目已在回收站'})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if project.project_creator != team_member:
-        return JsonResponse({'errno': 3013, 'msg': "当前用户不是该项目创建者，无法回收项目"})
-    project.project_recycle = True
+        return JsonResponse({'errno': 3143, 'msg': "当前用户不是该项目创建者"})
+    if status:
+        if project.project_recycle:
+            return JsonResponse({'errno': 3144, 'msg': '项目已在回收站'})
+    elif not status:
+        if not project.project_recycle:
+            return JsonResponse({'errno': 3145, 'msg': '项目不在回收站'})
+    project.project_recycle = status
     project.save()
-    return JsonResponse({'errno': 0, 'msg': "项目删除成功"})
+    return JsonResponse({'errno': 0, 'msg': "项目状态修改成功"})
 
 
 @csrf_exempt
@@ -269,7 +274,7 @@ def create_requirement(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def delete__requirement(request, user):
+def delete_requirement(request, user):
     data_json = json.loads(request.body)
     project_id = data_json.get('project_id')
     requirement_id = data_json.get('requirement_id')

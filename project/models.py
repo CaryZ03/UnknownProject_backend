@@ -69,16 +69,17 @@ class Requirement(Model):
     def to_json(self):
         info = {
             "requirement_id": self.requirement_id,
-            "requirement_name": self.requirement_name,
-            "requirement_creator": self.requirement_creator.tm_user_nickname if self.requirement_creator else None,
+            "name": self.requirement_name,
+            "person": self.requirement_creator.tm_user_nickname if self.requirement_creator else None,
             "requirement_create_time": self.requirement_create_time.strftime("%Y-%m-%d %H:%M:%S"),
-            "requirement_estimated_start_time": self.requirement_estimated_start_time.strftime("%Y-%m-%d %H:%M:%S")
+            "startTime": self.requirement_estimated_start_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.requirement_estimated_start_time else None,
-            "requirement_estimated_end_time": self.requirement_estimated_end_time.strftime("%Y-%m-%d %H:%M:%S")
+            "endTime": self.requirement_estimated_end_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.requirement_estimated_end_time else None,
             "requirement_end_time": self.requirement_end_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.requirement_end_time else None,
             "requirement_start_time": self.requirement_start_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.requirement_start_time else None,
+            "status": self.requirement_status,
         }
         return json.dumps(info)
