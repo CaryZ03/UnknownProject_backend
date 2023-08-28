@@ -26,6 +26,7 @@ class Project(Model):
     project_status = CharField(max_length=20, choices=status_choices, default='not_started')
     project_recycle = BooleanField(default=False)
     project_requirement = ManyToManyField('Requirement')
+    project_prototype = ManyToManyField('document.Prototype')
 
     def to_json(self):
         info = {

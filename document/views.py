@@ -7,6 +7,10 @@ from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 import json
 
+from user.models import User, UserToken
+from team.models import Team
+from project.models import Project
+
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -139,3 +143,65 @@ def upload_prototype(request):
 
     return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
 
+
+# @csrf_exempt
+# @require_http_methods(['POST'])
+# def show_prototype(request):
+#     data_json = json.loads(request.body)
+#     prototype_name = data_json.get('prototype_name')
+#     team_id = data_json.get('team_id')
+#     creator_id = data_json.get('creator_id')
+#     team = Team.objects.get(team_id=team_id)
+#     creator = User.objects.get(user_id=creator_id)
+#     prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_team=team, prototype_creator=creator)
+#     uploaded_file = request.FILES['file']
+#     prototype.prototype_file = uploaded_file
+#     prototype.save()
+#
+#     return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_prototype(request):
+    data_json = json.loads(request.body)
+    prototype_name = data_json.get('prototype_name')
+    project_id = data_json.get('project_id')
+    creator_id = data_json.get('creator_id')
+    project = Project.objects.get(project_id=project_id)
+    creator = User.objects.get(user_id=creator_id)
+    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=creator)
+    project.project_prototype.add(prototype)
+    # uploaded_file = request.FILES['file']
+    # prototype.prototype_file = uploaded_file
+    # prototype.save()
+    return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_prototype(request):
+    data_json = json.loads(request.body)
+    prototype_id = data_json.get('prototype_id')
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    prototype.delete()
+    # uploaded_file = request.FILES['file']
+    # prototype.prototype_file = uploaded_file
+    # prototype.save()
+    return JsonResponse({'errno': 0, 'message': '删除成功.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def show_prototype(request):
+    data_json = json.loads(request.body)
+    project_id = data_json.get('project_id')
+    project = Project.objects.get(project_id=project_id)
+    prototypes = project.project_prototype.add()
+    # uploaded_file = request.FILES['file']
+    # prototype.prototype_file = uploaded_file
+    # prototype.save()
+    p_info = []
+    for prototype in prototypes:
+        p_info.append(prototype.to_json())
+    return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'user_info': p_info})

@@ -28,6 +28,15 @@ class File(Model):
 class Prototype(Model):
     prototype_id = AutoField(primary_key=True)
     prototype_name = CharField(max_length=100)
-    prototype_team = ForeignKey('team.Team', on_delete=CASCADE)
+    prototype_project = ForeignKey('project.project', on_delete=CASCADE)
     prototype_creator = ForeignKey('user.User', on_delete=CASCADE)
     prototype_file = FileField(upload_to='prototype/', max_length=255)
+
+    def to_json(self):
+        info = {
+            "prototype_id": self.prototype_id,
+            "prototype_name": self.prototype_name,
+            "prototype_project": self.prototype_project.project_id,
+            "prototype_creator": self.prototype_creator.user_id
+        }
+        return json.dumps(info)
