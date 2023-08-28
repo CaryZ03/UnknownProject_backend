@@ -15,4 +15,5 @@ urlpatterns = [
     path('create_prototype', create_prototype, name='create_prototype'),
     path('delete_prototype', delete_prototype, name='delete_prototype'),
     path('show_prototype', show_prototype, name='show_prototype'),
+    path('show_document', show_document, name='show_document'),
 ]
