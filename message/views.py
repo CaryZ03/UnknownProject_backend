@@ -121,3 +121,63 @@ def post_skip_info(request):
     }
 
     return JsonResponse(info)
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def mark_unread_notification(request):
+    data = json.loads(request.body)
+    notification_id = data.get('notification_id')
+    notification = Notification.objects.get(notification_id=notification_id)
+    notification.notification_checked = False
+    notification.save()
+
+    return JsonResponse({'errno': 0, 'msg': "已标注为未读"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def mark_read_notification(request):
+    data = json.loads(request.body)
+    notification_id = data.get('notification_id')
+    notification = Notification.objects.get(notification_id=notification_id)
+    notification.notification_checked = True
+    notification.save()
+
+    return JsonResponse({'errno': 0, 'msg': "已标注为已读"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def mark_all_read_notification(request):
+    data_json = json.loads(request.body)
+    user_id = data_json.get('user_id')
+    user = User.objects.get(user_id=user_id)
+    for notification in user.user_notification_list.all():
+        notification.notification_checked = True
+        notification.save()
+
+    return JsonResponse({'errno': 0, 'msg': "已全部标注为已读"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_read_notifications(request):
+    data_json = json.loads(request.body)
+    user_id = data_json.get('user_id')
+    user = User.objects.get(user_id=user_id)
+    read_notifications = user.user_notification_list.filter(notification_checked=True)
+    read_notifications.delete()
+
+    return JsonResponse({'errno': 0, 'msg': "已删除所有已读消息"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_notification(request):
+    data_json = json.loads(request.body)
+    notification_id = data_json.get('notification_id')
+    notification = Notification.objects.get(notification_id=notification_id)
+    notification.delete()
+
+    return JsonResponse({'errno': 0, 'msg': "已删除消息"})
