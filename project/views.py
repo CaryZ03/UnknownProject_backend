@@ -184,6 +184,7 @@ def change_recycle_status(request, user):
     team_id = data_json.get('team_id')
     project_id = data_json.get('project_id')
     status = data_json.get('status')
+    print(status)
     if not Team.objects.filter(team_id=team_id).exists():
         return JsonResponse({'errno': 3140, 'msg': "该团队不存在"})
     team = Team.objects.get(team_id=team_id)
@@ -195,10 +196,10 @@ def change_recycle_status(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     if project.project_creator != team_member:
         return JsonResponse({'errno': 3143, 'msg': "当前用户不是该项目创建者"})
-    if status:
+    if status == "True":
         if project.project_recycle:
             return JsonResponse({'errno': 3144, 'msg': '项目已在回收站'})
-    elif not status:
+    else:
         if not project.project_recycle:
             return JsonResponse({'errno': 3145, 'msg': '项目不在回收站'})
     project.project_recycle = status
