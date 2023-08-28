@@ -11,6 +11,14 @@ class SavedDocument(Model):
     sd_file = FileField(upload_to='SavedDocument/', max_length=255, null=True)
     sd_saved_time = DateTimeField(auto_now_add=True)
 
+    def to_json(self):
+        info = {
+            "sd_id": self.sd_id,
+            "sd_file": self.sd_file.url,
+            "sd_saved_time": self.sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        return json.dumps(info)
+
 
 class Document(Model):
     document_id = AutoField(primary_key=True)
@@ -18,6 +26,15 @@ class Document(Model):
     document_team = ForeignKey('team.Team', on_delete=CASCADE, null=True)
     document_allowed_editors = ManyToManyField('user.User')
     document_saves = ManyToManyField(SavedDocument)
+
+    def to_json(self):
+        info = {
+            "document_id": self.document_id,
+            "document_name": self.document_name,
+            "document_team": self.document_team,
+            "document_allowed_editors": self.document_allowed_editors,
+        }
+        return json.dumps(info)
 
 
 class File(Model):

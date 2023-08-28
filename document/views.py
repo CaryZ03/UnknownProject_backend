@@ -1,3 +1,4 @@
+from project.models import Project
 from team.models import *
 from message.models import *
 from .models import File, Document, SavedDocument, Prototype
@@ -108,7 +109,7 @@ def show_save(request):
 
     s_info = []
     for s in saves:
-        s_info.append(s.sd_id)
+        s_info.append(s.to_json())
     return JsonResponse({'errno': 0, 'message': 'File callback successfully.', 's_info': s_info})
 
 
@@ -138,4 +139,17 @@ def upload_prototype(request):
     prototype.save()
 
     return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def show_document(request):
+    data = json.loads(request.body)
+    project_id = data.get('project_id')
+    project = Project.objects.get(project_id=project_id)
+    document_info_list = []
+    for document in project.document_list:
+        document_info_list.append(document.to_json())
+
+    return JsonResponse({"errno": 0, "msg": "返回文件列表成功", "document_info_list": document_info_list})
 
