@@ -33,6 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         array_data = text_data_json.get('array_data', [])
         message_type = text_data_json['message_type']
         file_id = text_data_json['file_id']
+        private_connect_id = text_data_json['private_connect_id']
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -43,7 +44,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'is_at_all': is_at_all,
                 'array_data': array_data,
                 'message_type': message_type,
-                'file_id': file_id
+                'file_id': file_id,
+                'private_connect_id': private_connect_id
             }
         )
 
@@ -55,6 +57,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         array_data = event['array_data']
         message_type = event['message_type']
         file_id = event['file_id']
+        private_connect_id = event['private_connect_id']
         await self.send(text_data=json.dumps({
             'user_id': user_id,
             'user_name': user_name,
@@ -62,6 +65,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'is_at_all': is_at_all,
             'array_data': array_data,
             'message_type': message_type,
-            'file_id': file_id
+            'file_id': file_id,
+            'private_connect_id': private_connect_id
         }))
 
