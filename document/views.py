@@ -53,9 +53,10 @@ def upload_saved_document(request):
 def create_document(request):
     data_json = json.loads(request.body)
     document_name = data_json.get('document_name')
-    team_id = data_json.get('team_id')
-    team = Team.objects.get(team_id=team_id)
-    document = Document.objects.create(document_name=document_name, document_team=team)
+    project_id = data_json.get('project_id')
+    project = Project.objects.get(project_id=project_id)
+    document = Document.objects.create(document_name=document_name, document_project=project)
+    project.project_document.add(document)
 
     return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.', 'document_id': document.document_id})
 
@@ -75,10 +76,12 @@ def download_saved_document(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def delete_document_all(request):
+def delete_document(request):
     data = json.loads(request.body)
     document_id = data.get('document_id')
     document = Document.objects.get(document_id=document_id)
+    project = document.document_project
+    project.project_document.remove(document)
     document.delete()
 
     return JsonResponse({'errno': 0, 'message': 'File deleted successfully.'})
@@ -185,6 +188,8 @@ def delete_prototype(request):
     data_json = json.loads(request.body)
     prototype_id = data_json.get('prototype_id')
     prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    project.project_prototype.remove(prototype)
     prototype.delete()
     # uploaded_file = request.FILES['file']
     # prototype.prototype_file = uploaded_file
@@ -208,7 +213,6 @@ def show_prototype(request):
     return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'user_info': p_info})
 
 
-
 @csrf_exempt
 @require_http_methods(['POST'])
 def show_document(request):
@@ -218,5 +222,4 @@ def show_document(request):
     document_info_list = []
     for document in project.document_list:
         document_info_list.append(document.to_json())
-
     return JsonResponse({"errno": 0, "msg": "返回文件列表成功", "document_info_list": document_info_list})

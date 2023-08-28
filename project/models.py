@@ -27,6 +27,7 @@ class Project(Model):
     project_recycle = BooleanField(default=False)
     project_requirement = ManyToManyField('Requirement')
     project_prototype = ManyToManyField('document.Prototype')
+    project_document = ManyToManyField('document.Document')
 
     def to_json(self):
         info = {
