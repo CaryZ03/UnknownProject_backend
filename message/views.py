@@ -14,7 +14,7 @@ from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .models import Notification
+from .models import Notification, ChatMessage
 
 
 @csrf_exempt
@@ -75,11 +75,14 @@ def group_send_notification_to_user(request):
     content = notification.get('content')
     creator_id = notification.get('creator_id')
     creator = User.objects.get(user_id=creator_id)
+    cm_id = notification.get('cm_id')
+    chat_message = ChatMessage.objects.get(cm_id=cm_id)
     type = notification.get('type')
     receiver_list = data_json.get('receiver_list')
     for user_id in receiver_list:
         notification = Notification.objects.create(
-            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
+            notification_name=name, notification_content=content,
+            notification_creator=creator, notification_type=type, notification_message=chat_message)
         print(user_id)
         receiver = User.objects.get(user_id=user_id)
         notification.notification_receiver = receiver
@@ -94,21 +97,27 @@ def group_send_notification_to_user(request):
 @require_http_methods(['POST'])
 def check_notification_list(request):
     data_json = json.loads(request.body)
-    notification = data_json.get('notification')
-    name = notification.get('name')
-    content = notification.get('content')
-    creator_id = notification.get('creator_id')
-    creator = User.objects.get(user_id=creator_id)
-    type = notification.get('type')
-    receiver_list = data_json.get('receiver_list')
-    for user_id in receiver_list:
-        notification = Notification.objects.create(
-            notification_name=name, notification_content=content, notification_creator=creator, notification_type=type)
-        print(user_id)
-        receiver = User.objects.get(user_id=user_id)
-        notification.notification_receiver = receiver
-        notification.save()
-        receiver.user_notification_list.add(notification)
-        send_notification_to_user(user_id, notification)
+    user_id = data_json.get('user_id')
+    user = User.objects.get(user_id=user_id)
+    notification_list_info = []
+    for notification in user.user_notification_list.all():
+        notification_list_info.append(notification.to_json())
 
-    return JsonResponse({'errno': 0, 'msg': "hihi"})
+    return JsonResponse({'errno': 0, 'msg': "hihi", "notification_list_info": notification_list_info})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def post_skip_info(request):
+    data = json.loads(request.body)
+    notification_id = data.get('notification_id')
+    notification = Notification.objects.get(notification_id=notification_id)
+    message = notification.notification_message
+    team = message.cm_from.team_set.first()
+
+    info = {
+        "team_id": team.team_id,
+        "cm_id": message.cm_id
+    }
+
+    return JsonResponse(info)
