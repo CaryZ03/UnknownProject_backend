@@ -30,7 +30,7 @@ class User(Model):
             "user_email": self.user_email,
             "user_tel": self.user_tel
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
 
 class UserToken(Model):

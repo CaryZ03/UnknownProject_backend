@@ -30,7 +30,7 @@ class Team(Model):
             "team_creator": self.team_creator.user_name,
             "team_avatar": self.team_avatar.url if self.team_avatar else None,
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
 
 class TeamMember(Model):
@@ -63,7 +63,7 @@ class TeamApplicant(Model):
             "message": self.ta_message,
             "apply_time": self.ta_apply_time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
     class Meta:
         unique_together = ['ta_team_id', 'ta_user_id']

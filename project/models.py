@@ -48,7 +48,7 @@ class Project(Model):
             "editable": self.project_editable,
             "project_team": self.project_team.team_name,
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
 
 class Requirement(Model):
@@ -84,4 +84,4 @@ class Requirement(Model):
             if self.requirement_start_time else None,
             "status": self.requirement_status,
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)

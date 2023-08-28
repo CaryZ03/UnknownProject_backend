@@ -44,4 +44,4 @@ class Notification(Model):
             "notification_checked": self.notification_checked,
             "notification_message": self.notification_message.cm_id
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)

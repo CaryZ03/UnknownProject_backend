@@ -17,7 +17,7 @@ class SavedDocument(Model):
             "sd_file": self.sd_file.url,
             "sd_saved_time": self.sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
 
 class Document(Model):
@@ -34,7 +34,7 @@ class Document(Model):
             "document_team": self.document_team,
             "document_allowed_editors": self.document_allowed_editors,
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)
 
 
 class File(Model):
@@ -56,4 +56,4 @@ class Prototype(Model):
             "prototype_project": self.prototype_project.project_id,
             "prototype_creator": self.prototype_creator.user_id
         }
-        return json.dumps(info)
+        return json.dumps(info, ensure_ascii=False)

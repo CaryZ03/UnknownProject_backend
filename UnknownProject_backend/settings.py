@@ -105,8 +105,7 @@ DATABASES = {
             "blocking": True
         },
         'OPTIONS': {
-            'charset': 'utf8mb4',  # 使用 utf8mb4 编码
-            'init_command': "SET collation_connection = 'utf8mb4_unicode_ci'",
+            'charset': 'utf8',  # 使用 utf8mb4 编码
         },
     }
 }
