@@ -485,4 +485,4 @@ def search_team_by_name(request):
     matching_teams_info = []
     for team in matching_teams:
         matching_teams_info.append(team.to_json())
-    return JsonResponse({'errno': 0, 'msg': '返回团队信息列表成功', 'matching_teams_info': matching_teams_info})
+    return JsonResponse({'errno': 0, 'msg': '返回用户信息列表成功', 'matching_teams_info': matching_teams_info})
