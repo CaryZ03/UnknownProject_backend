@@ -12,8 +12,11 @@ urlpatterns = [
     path('show_save', show_save, name='show_save'),
     path('search_save', search_save, name='search_save'),
     path('upload_prototype', upload_prototype, name='upload_prototype'),
+<<<<<<< Updated upstream
     path('create_prototype', create_prototype, name='create_prototype'),
     path('delete_prototype', delete_prototype, name='delete_prototype'),
     path('show_prototype', show_prototype, name='show_prototype'),
+=======
+>>>>>>> Stashed changes
     path('show_document', show_document, name='show_document'),
 ]
