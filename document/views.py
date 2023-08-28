@@ -1,6 +1,6 @@
 from team.models import *
 from message.models import *
-from .models import File, Document, SavedDocument
+from .models import File, Document, SavedDocument, Prototype
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -121,3 +121,21 @@ def search_save(request):
     response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
     return JsonResponse({'errno': 0, 'message': 'File callback successfully.'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def upload_prototype(request):
+    data_json = json.loads(request.body)
+    prototype_name = data_json.get('prototype_name')
+    team_id = data_json.get('team_id')
+    creator_id = data_json.get('creator_id')
+    team = Team.objects.get(team_id=team_id)
+    creator = User.objects.get(user_id=creator_id)
+    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_team=team, prototype_creator=creator)
+    uploaded_file = request.FILES['file']
+    prototype.prototype_file = uploaded_file
+    prototype.save()
+
+    return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+

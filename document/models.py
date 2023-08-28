@@ -23,3 +23,11 @@ class Document(Model):
 class File(Model):
     file_id = AutoField(primary_key=True)
     file_content = FileField(upload_to='file/', max_length=255, null=True)
+
+
+class Prototype(Model):
+    prototype_id = AutoField(primary_key=True)
+    prototype_name = CharField(max_length=100)
+    prototype_team = ForeignKey('team.Team', on_delete=CASCADE)
+    prototype_creator = ForeignKey('user.User', on_delete=CASCADE)
+    prototype_file = FileField(upload_to='prototype/', max_length=255)
