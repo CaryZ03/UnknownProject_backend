@@ -79,22 +79,25 @@ def store_message(request):
     is_at_all = data.get('is_at_all')
     message_type = data.get('message_type')
     array_data = data.get('array_data', [])
-
+    private_connect_id = data.get('private_connect_id', 0)
     user = User.objects.get(user_id=user_id)
     team = Team.objects.get(team_id=team_id)
     team_chat = team.team_chat
     history = team_chat.tc_history
 
     if is_at:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at, cm_type=message_type)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at,
+                                                      cm_type=message_type, private_connect_id=private_connect_id)
         for at_id in array_data:
             at_user = User.objects.get(user_id=at_id)
             at_team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=at_user)
             new_chat_message.cm_at.add(at_team_member)
     elif is_at_all:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all, cm_type=message_type)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all,
+                                                      cm_type=message_type, private_connect_id=private_connect_id)
     else:
-        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
+        new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type,
+                                                      private_connect_id=private_connect_id)
 
     if message_type == 'file':
         file_id = data.get('file_id')
@@ -131,6 +134,7 @@ def get_team_chat_history(request):
             "is_at_all": message.cm_at_all,
             "message_type": message.cm_type,
             "file_id": file_id,
+            "private_connect_id": message.cm_private_connect_id,
             "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
         }
         message_list.append(message_info)

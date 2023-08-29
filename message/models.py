@@ -15,6 +15,7 @@ class ChatMessage(Model):
     cm_at = ManyToManyField(TeamMember)
     cm_type = CharField(max_length=100, default='message')
     cm_file = ForeignKey('document.File', on_delete=SET_NULL, null=True)
+    cm_private_connect_id = IntegerField(default=0)
 
 
 class Notification(Model):
