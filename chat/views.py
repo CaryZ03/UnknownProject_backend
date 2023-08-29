@@ -162,6 +162,7 @@ def search_chat_message(request):
                     "message_type": message.cm_type,
                     "message_from": message.cm_from.user_name
                 }
+
                 search_res.append(message_info)
 
     return JsonResponse({'search_res': search_res})
