@@ -113,8 +113,8 @@ def post_skip_info(request):
     notification_id = data.get('notification_id')
     notification = Notification.objects.get(notification_id=notification_id)
     message = notification.notification_message
-    team = message.cm_from.team_set.first()
-
+    team_chat = message.teamchat_set.first()
+    team = team_chat.tc_team
     info = {
         "team_id": team.team_id,
         "cm_id": message.cm_id
