@@ -87,17 +87,17 @@ def store_message(request):
 
     if is_at:
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_isat=is_at,
-                                                      cm_type=message_type, private_connect_id=private_connect_id)
+                                                      cm_type=message_type, cm_private_connect_id=private_connect_id)
         for at_id in array_data:
             at_user = User.objects.get(user_id=at_id)
             at_team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=at_user)
             new_chat_message.cm_at.add(at_team_member)
     elif is_at_all:
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_at_all=is_at_all,
-                                                      cm_type=message_type, private_connect_id=private_connect_id)
+                                                      cm_type=message_type, cm_private_connect_id=private_connect_id)
     else:
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type,
-                                                      private_connect_id=private_connect_id)
+                                                      cm_private_connect_id=private_connect_id)
 
     if message_type == 'file':
         file_id = data.get('file_id')
