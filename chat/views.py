@@ -159,12 +159,23 @@ def search_chat_message(request):
         for message in chat_messages:
             message_content = message.cm_content
             if search_info.lower() in message_content.lower():
+                if message.cm_type == 'file':
+                    file_id = message.cm_file.file_id
+                else:
+                    file_id = 0
                 message_info = {
                     "team_id": team.team_id,
                     "cm_id": message.cm_id,
                     "message_content": message_content,
                     "message_type": message.cm_type,
-                    "message_from": message.cm_from.user_name
+                    "message_sender_id": message.cm_from.user_id,
+                    "message_sender_name": message.cm_from.user_name,
+                    "create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "is_at": message.cm_isat,
+                    "is_at_all": message.cm_at_all,
+                    "file_id": file_id,
+                    "private_connect_id": message.cm_private_connect_id,
+                    "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
                 }
 
                 search_res.append(message_info)
