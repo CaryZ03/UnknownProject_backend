@@ -137,3 +137,31 @@ def get_team_chat_history(request):
 
     return JsonResponse({"chat_history": message_list})
 
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_chat_message(request):
+    data = json.loads(request.body)
+    tm_user_id = data.get('tm_user_id')
+    search_info = data.get('search_info')
+    user = User.objects.get(user_id=tm_user_id)
+
+    search_res = []
+
+    for team_member in TeamMember.objects.filter(tm_user_id=user):
+        team = team_member.tm_team_id
+        team_chat = team.team_chat
+        chat_messages = team_chat.tc_history.all().order_by('cm_create_time')
+        for message in chat_messages:
+            message_content = message.cm_content
+            if search_info.lower() in message_content.lower():
+                message_info = {
+                    "team_id": team.team_id,
+                    "cm_id": message.cm_id,
+                    "message_content": message_content,
+                    "message_type": message.cm_type,
+                    "message_from": message.cm_from.user_name
+                }
+                search_res.append(message_info)
+
+    return JsonResponse({'search_res': search_res})
