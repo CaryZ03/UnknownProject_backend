@@ -19,4 +19,6 @@ urlpatterns = [
     path('search_prototype', search_prototype, name='search_prototype'),
     path('change_prototype', change_prototype, name='change_prototype'),
     path('change_document', change_document, name='change_document'),
+    path('document_allow_user', document_allow_user, name='document_allow_user'),
+    path('document_delete_user', document_delete_user, name='document_delete_user'),
 ]
