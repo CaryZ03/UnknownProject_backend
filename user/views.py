@@ -172,6 +172,8 @@ def user_register(request):
     #     return JsonResponse({'errno': 1144, 'msg': "真实姓名不合法"})
     else:
         new_user = User.objects.create(user_email=email, user_password=password1, user_name=nickname, user_real_name=realname)
+        if new_user.user_name is None:
+            new_user.user_name = new_user.user_id
         new_user.save()
         return JsonResponse({'errno': 0, 'msg': "注册成功"})
 
