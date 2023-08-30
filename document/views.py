@@ -2,6 +2,7 @@ import os
 import shutil
 
 from django.forms import model_to_dict
+from django.utils.timezone import now
 
 from project.models import Project
 from team.models import *
@@ -144,72 +145,108 @@ def delete_document(request, user):
         return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
-    if document.document_recycle:
-        return JsonResponse({'errno': 3122, 'msg': "文档在回收站中，无法操作"})
     project.project_document.remove(document)
     document.delete()
     return JsonResponse({'errno': 0, 'message': '文档删除成功'})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def callback_document(request):
+def callback_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
     savedDocument_id = data.get('savedDocument_id')
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
+    project = document.document_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if document.document_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "文档在回收站中，无法操作"})
     saves = document.document_saves.all()
     for s in saves:
         if s.sd_id > savedDocument_id:
             s.delete()
-
     recent_save = document.document_saves.last()
     response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-
-    return JsonResponse({'errno': 0, 'message': 'File callback successfully.'})
+    return JsonResponse({'errno': 0, 'message': '文档回滚成功.'})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def show_save(request):
+def show_save(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
+    project = document.document_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if document.document_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "文档在回收站中，无法操作"})
     saves = document.document_saves.all()
-
     s_info = []
     for s in saves:
         s_info.append(s.to_json())
-    return JsonResponse({'errno': 0, 'message': 'File callback successfully.', 's_info': s_info})
+    return JsonResponse({'errno': 0, 'message': '返回副本成功', 's_info': s_info})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def search_save(request):
+def search_save(request, user):
     data = json.loads(request.body)
     save_id = data.get('save_id')
+    if not SavedDocument.objects.filter(sd_id=save_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该副本不存在"})
     recent_save = SavedDocument.objects.create(sd_id=save_id)
+    document = recent_save.sd_document
+    project = document.document_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if document.document_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "文档在回收站中，无法操作"})
     response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return JsonResponse({'errno': 0, 'message': 'File callback successfully.'})
+    return JsonResponse({'errno': 0, 'message': '查找文档副本成功.'})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def upload_prototype(request):
+def create_prototype(request, user):
     data_json = json.loads(request.body)
     prototype_name = data_json.get('prototype_name')
-    team_id = data_json.get('team_id')
-    creator_id = data_json.get('creator_id')
-    team = Team.objects.get(team_id=team_id)
-    creator = User.objects.get(user_id=creator_id)
-    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_team=team, prototype_creator=creator)
-    uploaded_file = request.FILES['file']
-    prototype.prototype_file = uploaded_file
+    project_id = data_json.get('project_id')
+    if not Project.objects.filter(project_id=project_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该项目不存在"})
+    project = Project.objects.get(project_id=project_id)
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
+    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=team_member)
+    prototype.prototype_change_time = prototype.prototype_create_time
+    # uploaded_file = request.FILES['file']
+    # prototype.prototype_file = uploaded_file
     prototype.save()
-
-    return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+    return JsonResponse({'errno': 0, 'message': '原型新建成功'})
 
 
 # @csrf_exempt
@@ -230,63 +267,69 @@ def upload_prototype(request):
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def create_prototype(request):
+def upload_prototype(request, user):
     data_json = json.loads(request.body)
-    prototype_name = data_json.get('prototype_name')
-    project_id = data_json.get('project_id')
-    creator_id = data_json.get('creator_id')
-    project = Project.objects.get(project_id=project_id)
-    creator = User.objects.get(user_id=creator_id)
-    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=creator)
-    project.project_prototype.add(prototype)
-    # uploaded_file = request.FILES['file']
-    # prototype.prototype_file = uploaded_file
-    # prototype.save()
-    return JsonResponse({'errno': 0, 'message': 'File uploaded successfully.'})
+    prototype_id = data_json.get('prototype_id')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该原型不存在"})
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if prototype.prototype_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "原型在回收站中，无法操作"})
+    uploaded_file = request.FILES['file']
+    prototype.prototype_file = uploaded_file
+    prototype.prototype_change_time = now()
+    prototype.save()
+    return JsonResponse({'errno': 0, 'message': '原型修改成功'})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def delete_prototype(request):
+def delete_prototype(request, user):
     data_json = json.loads(request.body)
     prototype_id = data_json.get('prototype_id')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该原型不存在"})
     prototype = Prototype.objects.get(prototype_id=prototype_id)
     project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
     project.project_prototype.remove(prototype)
     prototype.delete()
-    # uploaded_file = request.FILES['file']
-    # prototype.prototype_file = uploaded_file
-    # prototype.save()
     return JsonResponse({'errno': 0, 'message': '删除成功.'})
 
 
 @csrf_exempt
+@login_required
 @require_http_methods(['POST'])
-def show_prototype(request):
+def show_prototype_list(request, user):
     data_json = json.loads(request.body)
     project_id = data_json.get('project_id')
+    recycle = data_json.get('recycle')
+    if not Project.objects.filter(project_id=project_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
-    prototypes = project.project_prototype.add()
-    # uploaded_file = request.FILES['file']
-    # prototype.prototype_file = uploaded_file
-    # prototype.save()
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    prototypes = project.project_prototype.filter(prototype_recycle=recycle)
     p_info = []
     for prototype in prototypes:
         p_info.append(prototype.to_json())
-    return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'user_info': p_info})
-
-
-@csrf_exempt
-@require_http_methods(['POST'])
-def show_document(request):
-    data = json.loads(request.body)
-    project_id = data.get('project_id')
-    project = Project.objects.get(project_id=project_id)
-    document_info_list = []
-    for document in project.document_list:
-        document_info_list.append(document.to_json())
-    return JsonResponse({"errno": 0, "msg": "返回文件列表成功", "document_info_list": document_info_list})
+    return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'protoTable': p_info})
 
 
 def copy_document(project, old_document):
@@ -314,3 +357,75 @@ def copy_document(project, old_document):
         new_saved_document.save()
         new_document.document_saves.add(new_saved_document)
     return new_document
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def search_prototype(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该原型不存在"})
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if prototype.prototype_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "原型在回收站中，无法操作"})
+    response = HttpResponse(prototype.prototype_file.read(), content_type='application/octet-stream')
+    response['Content-Disposition'] = f'attachment; filename="{prototype.prototype_file.name}"'
+    return JsonResponse({'errno': 0, 'message': '查找原型成功.'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_prototype(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    prototype_name = data.get('name')
+    prototype_recycle = data.get('recycle')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该原型不存在"})
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if prototype.prototype_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "原型在回收站中，无法操作"})
+    prototype.prototype_name = prototype_name
+    prototype.prototype_recycle = prototype_recycle
+    prototype.save()
+    return JsonResponse({'errno': 0, 'message': '查找原型成功.'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_document(request, user):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    document_name = data.get('name')
+    document_recycle = data.get('recycle')
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 3120, 'msg': "该文档类不存在"})
+    document = Document.objects.get(document_id=document_id)
+    project = document.document_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 3121, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "项目在回收站中，无法操作"})
+    if document.document_recycle:
+        return JsonResponse({'errno': 3122, 'msg': "文档在回收站中，无法操作"})
+    document.document_recycle = document_recycle
+    document.document_name = document_name
+    document.save()
+    return JsonResponse({'errno': 0, 'message': '文档回滚成功.'})

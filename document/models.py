@@ -39,6 +39,7 @@ class Document(Model):
             "size": self.document_saves.last().size(),
             "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
             "editable": self.document_editable,
+            "save_id": self.document_saves.last().sd_id
         }
         return json.dumps(info, ensure_ascii=False)
 
@@ -52,17 +53,20 @@ class Prototype(Model):
     prototype_id = AutoField(primary_key=True)
     prototype_name = CharField(max_length=100)
     prototype_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
-    prototype_creator = ForeignKey('user.User', on_delete=CASCADE)
+    prototype_creator = ForeignKey('team.TeamMember', on_delete=CASCADE)
     prototype_file = FileField(upload_to='prototype/', max_length=255)
     prototype_create_time = DateTimeField(null=True, auto_now_add=True)
-    prototype_change_time = DateTimeField(null=True, auto_now_add=True)
+    prototype_change_time = DateTimeField(null=True)
     prototype_recycle = BooleanField(default=False)
 
     def to_json(self):
         info = {
             "prototype_id": self.prototype_id,
-            "prototype_name": self.prototype_name,
+            "name": self.prototype_name,
             "prototype_project": self.prototype_project.project_id,
-            "prototype_creator": self.prototype_creator.user_id
+            "prototype_creator": self.prototype_creator.tm_user_nickname,
+            "lastChangeTime": self.prototype_change_time,
+            "createTime": self.prototype_create_time,
+            "size": self.prototype_file.size()
         }
         return json.dumps(info, ensure_ascii=False)
