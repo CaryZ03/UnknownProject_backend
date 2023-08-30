@@ -218,8 +218,82 @@ def acquire_private_chat(request):
                 if pc_member != team_member:
                     private_chat_info = {
                         'pc_id': pc.pc_id,
+                        'opposite_id': pc_member.tm_user_id.user_id,
                         'opposite_name': pc_member.tm_user_id.user_name
                     }
                     private_chats_info.append(private_chat_info)
 
     return JsonResponse({'private_chats_info': private_chats_info})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def store_private_message(request):
+    data = json.loads(request.body)
+    message = data.get('message')
+    user_id = data.get('user_id')
+    pc_id = data.get('pc_id')
+    message_type = data.get('message_type')
+
+    user = User.objects.get(user_id=user_id)
+    pc = PrivateChat.objects.get(pc_id=pc_id)
+    history = pc.pc_history
+
+    new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
+
+    if message_type == 'file':
+        file_id = data.get('file_id')
+        file = File.objects.get(file_id=file_id)
+        new_chat_message.cm_file = file
+    new_chat_message.save()
+    history.add(new_chat_message)
+    pc.save()
+    return JsonResponse({'cm_id': new_chat_message.cm_id, 'msg': "插入消息成功"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def get_private_chat_history(request):
+    data = json.loads(request.body)
+    pc_id = data.get('pc_id')
+    pc = PrivateChat.objects.get(pc_id=pc_id)
+    chat_messages = pc.pc_history.all().order_by('cm_create_time')
+
+    message_list = []
+    for message in chat_messages:
+        if message.cm_type == 'file':
+            file_id = message.cm_file.file_id
+        else:
+            file_id = 0
+        message_info = {
+            "cm_id": message.cm_id,
+            "message": message.cm_content,
+            "user_id": message.cm_from.user_id,
+            "user_name": message.cm_from.user_name,
+            "cm_create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "message_type": message.cm_type,
+            "file_id": file_id,
+        }
+        message_list.append(message_info)
+
+    return JsonResponse({"chat_history": message_list})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_group_chat(request):
+    data = json.loads(request.body)
+    user1_id = data.get('user1_id')
+    user1 = User.objects.get(user_id=user1_id)
+    user2_id = data.get('user2_id')
+    user2 = User.objects.get(user_id=user2_id)
+    team_id = data.get('team_id')
+    team = Team.objects.get(team_id=team_id)
+    team_member1 = TeamMember.objects.get(tm_user_id=user1, tm_team_id=team)
+    team_member2 = TeamMember.objects.get(tm_user_id=user2, tm_team_id=team)
+    new_private_chat = PrivateChat.objects.create()
+    new_private_chat.pc_members.add(team_member1)
+    new_private_chat.pc_members.add(team_member2)
+    new_private_chat.save()
+
+    return JsonResponse({'msg': "创建私聊成功"})
