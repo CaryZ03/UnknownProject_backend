@@ -442,7 +442,7 @@ def copy_project(request, user):
     new_name = data_json.get('new_name')
     old_project = Project.objects.get(project_id=project_id)
     team = old_project.project_team
-    creator = team.team_member.filter(tm_user_id=user)
+    creator = team.team_member.filter(tm_user_id=user).first()
     # 使用 model_to_dict 将原始实例转换为字典
     project_data = model_to_dict(old_project)
 
