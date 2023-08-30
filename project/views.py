@@ -5,6 +5,7 @@ import secrets
 import json
 from time import strptime
 
+from django.forms import model_to_dict
 from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -432,24 +433,21 @@ def search_project_by_name(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def copy_profile(request, user):
+def copy_project(request, user):
     data_json = json.loads(request.body)
     project_id = data_json.get('project_id')
+    new_name = data_json.get('new_name')
     old_project = Project.objects.get(project_id=project_id)
-    name = data_json.get('name')
-    description = data_json.get('description')
-    project_editable = data_json.get('editable')
-    status = data_json.get('status')
-    estimated_start_time = data_json.get('estimated_start_time')
-    estimated_end_time = data_json.get('estimated_end_time')
-    recycle = data_json.get('recycle')
+    # 使用 model_to_dict 将原始实例转换为字典
+    project_data = model_to_dict(old_project)
 
-    project.project_status = status
-    project.project_estimated_end_time = estimated_end_time
-    project.project_estimated_start_time = estimated_start_time
-    project.project_editable = project_editable
-    project.project_name = name
-    project.project_description = description
-    project.project_recycle = recycle
-    project.save()
+    # 创建新的 Project 实例
+    new_project = Project(**project_data)
+
+    # 将新实例的主键设置为 None，以便创建一个新的数据库记录
+    new_project.pk = None
+
+    new_project.project_name = new_name
+    new_project.save()
+
     return JsonResponse({'errno': 0, 'msg': "项目信息修改成功"})
