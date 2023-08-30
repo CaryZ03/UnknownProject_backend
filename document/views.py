@@ -333,16 +333,17 @@ def show_prototype_list(request, user):
 
 
 def copy_document(project, old_document):
-    data = model_to_dict(old_document)
-    new_document = Document(**data)
-    new_document.pk = None
-    new_document.requirement_project = project
+    new_document = Document()
+    new_document.document_name = old_document.document_name
+    new_document.document_project = project
+    new_document.document_recycle = old_document.document_recycle
+    new_document.document_editable = old_document.document_editable
+
     new_document.save()
     project.project_document.add(new_document)
     for old_saved_document in old_document.document_saves:
-        data = model_to_dict(old_saved_document)
-        new_saved_document = SavedDocument(**data)
-        new_saved_document.pk = None
+        new_saved_document = SavedDocument()
+        new_saved_document.sd_saved_time = old_saved_document.sd_saved_time
         new_saved_document.sd_document = new_document
         if old_saved_document.sd_file:
             old_file_path = old_saved_document.sd_file.path
