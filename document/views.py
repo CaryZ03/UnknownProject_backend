@@ -96,7 +96,7 @@ def download_saved_document(request, user):
     document = Document.objects.get(document_id=document_id)
     project = document.document_project
     team = project.project_team
-    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists() and not document.document_allowed_editors.filter(user_id=user.user_id):
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists() and not document.document_allowed_editors.filter(user_id=user.user_id).exists():
         return JsonResponse({'errno': 4051, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4052, 'msg': "项目在回收站中，无法操作"})
@@ -210,7 +210,7 @@ def search_save(request, user):
     save_id = data.get('save_id')
     if not SavedDocument.objects.filter(sd_id=save_id).exists():
         return JsonResponse({'errno': 4100, 'msg': "该副本不存在"})
-    recent_save = SavedDocument.objects.create(sd_id=save_id)
+    recent_save = SavedDocument.objects.get(sd_id=save_id)
     document = recent_save.sd_document
     project = document.document_project
     team = project.project_team
