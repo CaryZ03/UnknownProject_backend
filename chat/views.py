@@ -296,4 +296,4 @@ def create_group_chat(request):
     new_private_chat.pc_members.add(team_member2)
     new_private_chat.save()
 
-    return JsonResponse({'msg': "创建私聊成功"})
+    return JsonResponse({'msg': "创建群聊成功"})
