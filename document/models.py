@@ -26,13 +26,19 @@ class Document(Model):
     document_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     document_allowed_editors = ManyToManyField('user.User')
     document_saves = ManyToManyField(SavedDocument)
+    document_create_time = DateTimeField(null=True, auto_now_add=True)
+    document_recycle = BooleanField(default=False)
+    document_editable = BooleanField(default=False)
 
     def to_json(self):
         info = {
             "document_id": self.document_id,
-            "document_name": self.document_name,
+            "name": self.document_name,
             "document_team": self.document_team,
             "document_allowed_editors": self.document_allowed_editors,
+            "size": self.document_saves.last().size(),
+            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "editable": self.document_editable,
         }
         return json.dumps(info, ensure_ascii=False)
 
@@ -48,6 +54,9 @@ class Prototype(Model):
     prototype_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     prototype_creator = ForeignKey('user.User', on_delete=CASCADE)
     prototype_file = FileField(upload_to='prototype/', max_length=255)
+    prototype_create_time = DateTimeField(null=True, auto_now_add=True)
+    prototype_change_time = DateTimeField(null=True, auto_now_add=True)
+    prototype_recycle = BooleanField(default=False)
 
     def to_json(self):
         info = {

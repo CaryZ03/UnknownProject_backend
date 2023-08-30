@@ -16,7 +16,7 @@ class Project(Model):
     project_end_time = DateTimeField(null=True)
     project_start_time = DateTimeField(null=True)
     project_creator = ForeignKey(TeamMember, on_delete=SET_NULL, null=True)
-    project_editable = BooleanField(default=True)
+    project_editable = BooleanField(default=False)
     project_team = ForeignKey(Team, on_delete=CASCADE, null=True)
     status_choices = (
         ('not_started', "未开始"),
