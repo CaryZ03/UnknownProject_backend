@@ -95,7 +95,7 @@ def add_manager(request, user):
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 2031, 'msg': "当前用户不在该团队内"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
-    if team_member.tm_user_permissions != 'creator':
+    if team_member.tm_user_permissions == 'member':
         return JsonResponse({'errno': 2032, 'msg': "用户权限不足"})
     if not User.objects.filter(user_id=user_id).exists():
         return JsonResponse({'errno': 2033, 'msg': "该用户不存在"})
