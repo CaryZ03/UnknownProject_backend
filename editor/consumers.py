@@ -5,49 +5,65 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 class DocumentConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.document_id = self.scope['url_route']['kwargs']['document_id']
-        self.document_group_name = f"document_{self.document_id}"
-        #self.user_color = f"rgb({random.randint(0, 255)}, {random.randint(0, 255)}, {random.randint(0, 255)})"
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = f"editor_{self.room_name}"
 
-        # 将用户添加到文档的群组
         await self.channel_layer.group_add(
-            self.document_group_name,
+            self.room_group_name,
             self.channel_name
         )
 
         await self.accept()
 
     async def disconnect(self, close_code):
-        # 将用户从文档的群组中移除
         await self.channel_layer.group_discard(
-            self.document_group_name,
+            self.room_group_name,
             self.channel_name
         )
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-        content = data['content']
-        #cursor_position = data['cursor_position']
-
-        # 将接收到的内容广播给文档的所有用户
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
+        user_id = text_data_json['user_id']
+        user_name = text_data_json['user_name']
+        is_at_all = text_data_json['is_at_all']
+        array_data = text_data_json.get('array_data', [])
+        message_type = text_data_json['message_type']
+        file_id = text_data_json['file_id']
+        private_connect_id = text_data_json['private_connect_id']
+        print(message)
         await self.channel_layer.group_send(
-            self.document_group_name,
+            self.room_group_name,
             {
-                'type': 'document_update',
-                'content': content,
-                #'cursor_position': cursor_position,
-                #'user_color': self.user_color
+                'type': 'edit_message',
+                'message': message,
+                'user_id': user_id,
+                'user_name': user_name,
+                'is_at_all': is_at_all,
+                'array_data': array_data,
+                'message_type': message_type,
+                'file_id': file_id,
+                'private_connect_id': private_connect_id
             }
         )
 
-    async def document_update(self, event):
-        content = event['content']
-        #cursor_position = event['cursor_position']
-        #user_color = event['user_color']
-
-        # 将内容发送给WebSocket连接
+    async def edit_message(self, event):
+        user_id = event['user_id']
+        user_name = event['user_name']
+        message = event['message']
+        is_at_all = event['is_at_all']
+        array_data = event['array_data']
+        message_type = event['message_type']
+        file_id = event['file_id']
+        private_connect_id = event['private_connect_id']
+        print(message)
         await self.send(text_data=json.dumps({
-            'content': content,
-            #'cursor_position': cursor_position,
-            #'user_color': user_color
+            'user_id': user_id,
+            'user_name': user_name,
+            'message': message,
+            'is_at_all': is_at_all,
+            'array_data': array_data,
+            'message_type': message_type,
+            'file_id': file_id,
+            'private_connect_id': private_connect_id
         }))
