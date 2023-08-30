@@ -24,46 +24,34 @@ class DocumentConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-        user_id = text_data_json['user_id']
-        user_name = text_data_json['user_name']
-        is_at_all = text_data_json['is_at_all']
-        array_data = text_data_json.get('array_data', [])
-        message_type = text_data_json['message_type']
-        file_id = text_data_json['file_id']
-        private_connect_id = text_data_json['private_connect_id']
+        x_off = text_data_json['x_off']
+        y_off = text_data_json['y_off']
+        x_scale = text_data_json['x_scale']
+        y_scale = text_data_json['y_scale']
         print(message)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'edit_message',
                 'message': message,
-                'user_id': user_id,
-                'user_name': user_name,
-                'is_at_all': is_at_all,
-                'array_data': array_data,
-                'message_type': message_type,
-                'file_id': file_id,
-                'private_connect_id': private_connect_id
+                'x_off': x_off,
+                'y_off': y_off,
+                'x_scale': x_scale,
+                'y_scale': y_scale
             }
         )
 
     async def edit_message(self, event):
-        user_id = event['user_id']
-        user_name = event['user_name']
         message = event['message']
-        is_at_all = event['is_at_all']
-        array_data = event['array_data']
-        message_type = event['message_type']
-        file_id = event['file_id']
-        private_connect_id = event['private_connect_id']
+        x_off = event['x_off']
+        y_off = event['y_off']
+        x_scale = event['x_scale']
+        y_scale = event['y_scale']
         print(message)
         await self.send(text_data=json.dumps({
-            'user_id': user_id,
-            'user_name': user_name,
             'message': message,
-            'is_at_all': is_at_all,
-            'array_data': array_data,
-            'message_type': message_type,
-            'file_id': file_id,
-            'private_connect_id': private_connect_id
+            'x_off': x_off,
+            'y_off': y_off,
+            'x_scale': x_scale,
+            'y_scale': y_scale
         }))
