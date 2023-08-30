@@ -246,6 +246,7 @@ def create_prototype(request, user):
     # uploaded_file = request.FILES['file']
     # prototype.prototype_file = uploaded_file
     prototype.save()
+    project.project_prototype.add(prototype)
     return JsonResponse({'errno': 0, 'message': '原型新建成功'})
 
 

@@ -502,5 +502,5 @@ def copy_project(request, user):
         copy_document(new_project, old_document)
 
     team.team_projects.add(new_project)
-    
+
     return JsonResponse({'errno': 0, 'msg': "项目复制修改成功"})
