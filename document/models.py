@@ -69,3 +69,11 @@ class Prototype(Model):
             "size": self.prototype_file.size()
         }
         return json.dumps(info, ensure_ascii=False)
+
+
+class Template(Model):
+    template_id = AutoField(primary_key=True)
+    template_name = CharField(max_length=100)
+    template_editable = BooleanField(default=False)
+    template_file = FileField(upload_to='template/', max_length=255)
+

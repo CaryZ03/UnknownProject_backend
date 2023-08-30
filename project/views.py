@@ -3,6 +3,7 @@ import os
 import re
 import secrets
 import json
+import shutil
 from time import strptime
 
 from django.forms import model_to_dict
@@ -443,33 +444,57 @@ def copy_project(request, user):
     old_project = Project.objects.get(project_id=project_id)
     team = old_project.project_team
     creator = team.team_member.get(tm_user_id=user)
-    # 使用 model_to_dict 将原始实例转换为字典
-    project_data = model_to_dict(old_project)
-
-    # 创建新的 Project 实例
-    new_project = Project(**project_data)
-
-    # 将新实例的主键设置为 None，以便创建一个新的数据库记录
-    new_project.pk = None
+    new_project = Project()
 
     new_project.project_name = new_name
+    new_project.project_description = old_project.project_description
+    new_project.project_estimated_start_time = old_project.project_estimated_start_time
+    new_project.project_estimated_end_time = old_project.project_estimated_end_time
+    new_project.project_end_time = old_project.project_end_time
+    new_project.project_start_time = old_project.project_start_time
     new_project.project_creator = creator
+    new_project.project_editable = old_project.project_editable
+    new_project.project_team = team
+    new_project.project_status = old_project.project_status
+    new_project.project_recycle = old_project.project_recycle
+
     new_project.save()
 
     # 复制 ManyToMany 关系
     for old_requirement in old_project.project_requirement.all():
-        data = model_to_dict(old_requirement)
-        new_requirement = Requirement(**data)
-        new_requirement.pk = None
+        new_requirement = Requirement()
+        new_requirement.requirement_name = old_requirement.requirement_name
+        new_requirement.requirement_creator = old_requirement.requirement_creator
+        new_requirement.requirement_estimated_start_time = old_requirement.requirement_estimated_start_time
+        new_requirement.requirement_estimated_end_time = old_requirement.requirement_estimated_end_time
+        new_requirement.requirement_end_time = old_requirement.requirement_end_time
+        new_requirement.requirement_start_time = old_requirement.requirement_start_time
         new_requirement.requirement_project = new_project
+        new_requirement.requirement_status = old_requirement.requirement_status
+
+        # 保存新的需求实例到数据库
         new_requirement.save()
         new_project.project_requirement.add(new_requirement)
 
     for old_prototype in old_project.project_prototype.all():
-        data = model_to_dict(old_prototype)
-        new_prototype = Prototype(**data)
-        new_prototype.pk = None
-        new_prototype.prototype_project = new_project
+        new_prototype = Prototype()
+        # 假设 old_prototype 和 new_prototype 是已经存在的实例
+        new_prototype.prototype_name = old_prototype.prototype_name
+        new_prototype.prototype_project = new_prototype
+        new_prototype.prototype_creator = old_prototype.prototype_creator
+        if old_prototype.prototype_file:
+            old_file_path = old_prototype.prototype_file.path
+            old_file_name, old_file_extension = os.path.splitext(os.path.basename(old_file_path))
+
+            # 假设 new_saved_document 是新的 SavedDocument 实例
+            new_file_id = new_prototype.pk  # 新文件的 ID
+            new_file_path = f'Prototype/{old_file_name}_{new_file_id}{old_file_extension}'
+
+            shutil.copy(old_file_path, new_file_path)
+            new_prototype.prototype_file.name = new_file_path
+        new_prototype.prototype_recycle = old_prototype.prototype_recycle
+
+        # 保存新的原型实例到数据库
         new_prototype.save()
         new_project.project_prototype.add(new_prototype)
 
