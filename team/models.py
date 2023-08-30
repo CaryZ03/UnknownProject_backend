@@ -84,5 +84,6 @@ class PrivateChat(Model):
 class GroupChat(Model):
     gc_id = AutoField(primary_key=True)
     gc_name = CharField(max_length=30)
-    gc_members = ManyToManyField(TeamMember)
+    gc_creator = ForeignKey(TeamMember, on_delete=CASCADE, null=True, related_name='gc_creator')
+    gc_members = ManyToManyField(TeamMember, related_name='gc_members')
     gc_history = ManyToManyField('message.ChatMessage')
