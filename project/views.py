@@ -501,4 +501,6 @@ def copy_project(request, user):
     for old_document in old_project.project_document.all():
         copy_document(new_project, old_document)
 
+    team.team_projects.add(new_project)
+    
     return JsonResponse({'errno': 0, 'msg': "项目复制修改成功"})
