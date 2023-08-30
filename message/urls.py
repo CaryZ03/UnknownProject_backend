@@ -10,4 +10,5 @@ urlpatterns = [
     path('mark_all_read_notification', mark_all_read_notification, name='mark_all_read_notification'),
     path('delete_read_notifications', delete_read_notifications, name='delete_read_notifications'),
     path('delete_notification', delete_notification, name='delete_notification'),
+
 ]

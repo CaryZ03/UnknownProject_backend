@@ -106,6 +106,7 @@ def check_notification_list(request):
     return JsonResponse({'errno': 0, 'msg': "hihi", "notification_list_info": notification_list_info})
 
 
+
 @csrf_exempt
 @require_http_methods(['POST'])
 def post_skip_info(request):
@@ -113,14 +114,17 @@ def post_skip_info(request):
     notification_id = data.get('notification_id')
     notification = Notification.objects.get(notification_id=notification_id)
     message = notification.notification_message
+
     team_chat = message.teamchat_set.first()
     team = team_chat.tc_team
+
     info = {
         "team_id": team.team_id,
         "cm_id": message.cm_id
     }
 
     return JsonResponse(info)
+
 
 
 @csrf_exempt
@@ -181,3 +185,4 @@ def delete_notification(request):
     notification.delete()
 
     return JsonResponse({'errno': 0, 'msg': "已删除消息"})
+
