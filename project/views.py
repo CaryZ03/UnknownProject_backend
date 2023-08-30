@@ -427,3 +427,29 @@ def search_project_by_name(request, user):
         if project.project_team == team:
             matching_projects_info.append(project.to_json())
     return JsonResponse({'errno': 0, 'msg': '返回项目信息列表成功', 'matching_projects_info': matching_projects_info})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def copy_profile(request, user):
+    data_json = json.loads(request.body)
+    project_id = data_json.get('project_id')
+    old_project = Project.objects.get(project_id=project_id)
+    name = data_json.get('name')
+    description = data_json.get('description')
+    project_editable = data_json.get('editable')
+    status = data_json.get('status')
+    estimated_start_time = data_json.get('estimated_start_time')
+    estimated_end_time = data_json.get('estimated_end_time')
+    recycle = data_json.get('recycle')
+
+    project.project_status = status
+    project.project_estimated_end_time = estimated_end_time
+    project.project_estimated_start_time = estimated_start_time
+    project.project_editable = project_editable
+    project.project_name = name
+    project.project_description = description
+    project.project_recycle = recycle
+    project.save()
+    return JsonResponse({'errno': 0, 'msg': "项目信息修改成功"})

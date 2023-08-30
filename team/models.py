@@ -77,5 +77,12 @@ class TeamChat(Model):
 
 class PrivateChat(Model):
     pc_id = AutoField(primary_key=True)
-    pc_members = ManyToManyField(User)
+    pc_members = ManyToManyField(TeamMember)
     pc_history = ManyToManyField('message.ChatMessage')
+
+
+class GroupChat(Model):
+    gc_id = AutoField(primary_key=True)
+    gc_name = CharField(max_length=30)
+    gc_members = ManyToManyField(TeamMember)
+    gc_history = ManyToManyField('message.ChatMessage')
