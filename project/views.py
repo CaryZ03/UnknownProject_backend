@@ -11,9 +11,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
+
+from document.views import copy_document
 from user.models import User, UserToken
 from team.models import Team, TeamMember, TeamApplicant
 from .models import Project, Requirement
+from document.models import Document, Prototype
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required, get_avatar_base64
@@ -438,6 +441,8 @@ def copy_project(request, user):
     project_id = data_json.get('project_id')
     new_name = data_json.get('new_name')
     old_project = Project.objects.get(project_id=project_id)
+    team = old_project.project_team
+    creator = team.team_member.filter(tm_user_id=user)
     # 使用 model_to_dict 将原始实例转换为字典
     project_data = model_to_dict(old_project)
 
@@ -448,6 +453,27 @@ def copy_project(request, user):
     new_project.pk = None
 
     new_project.project_name = new_name
+    new_project.project_creator = creator
     new_project.save()
+
+    # 复制 ManyToMany 关系
+    for old_requirement in old_project.project_requirement.all():
+        data = model_to_dict(old_requirement)
+        new_requirement = Requirement(**data)
+        new_requirement.pk = None
+        new_requirement.requirement_project = new_project
+        new_requirement.save()
+        new_project.project_requirement.add(new_requirement)
+
+    for old_prototype in old_project.project_prototype.all():
+        data = model_to_dict(old_prototype)
+        new_prototype = Prototype(**data)
+        new_prototype.pk = None
+        new_prototype.prototype_project = new_project
+        new_prototype.save()
+        new_project.project_prototype.add(new_prototype)
+
+    for old_document in old_project.project_document.all():
+        copy_document(new_project, old_document)
 
     return JsonResponse({'errno': 0, 'msg': "项目信息修改成功"})
