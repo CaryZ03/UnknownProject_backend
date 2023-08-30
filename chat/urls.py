@@ -7,4 +7,5 @@ urlpatterns = [
     path('store_message', store_message, name='store_message'),
     path('get_team_chat_history', get_team_chat_history, name='get_team_chat_history'),
     path('search_chat_message', search_chat_message, name='search_chat_message'),
+    path('create_private_chat', create_private_chat, name='create_private_chat'),
 ]

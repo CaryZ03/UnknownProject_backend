@@ -181,3 +181,23 @@ def search_chat_message(request):
                 search_res.append(message_info)
 
     return JsonResponse({'search_res': search_res})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_private_chat(request):
+    data = json.loads(request.body)
+    user1_id = data.get('user1_id')
+    user1 = User.objects.get(user_id=user1_id)
+    user2_id = data.get('user2_id')
+    user2 = User.objects.get(user_id=user2_id)
+    team_id = data.get('team_id')
+    team = Team.objects.get(team_id=team_id)
+    team_member1 = TeamMember.objects.get(tm_user_id=user1, tm_team_id=team)
+    team_member2 = TeamMember.objects.get(tm_user_id=user2, tm_team_id=team)
+    new_private_chat = PrivateChat.objects.create()
+    new_private_chat.pc_members.add(team_member1)
+    new_private_chat.pc_members.add(team_member2)
+    new_private_chat.save()
+
+    return JsonResponse({'msg': "创建私聊成功"})
