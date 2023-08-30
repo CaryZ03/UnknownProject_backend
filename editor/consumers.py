@@ -28,6 +28,8 @@ class DocumentConsumer(AsyncWebsocketConsumer):
         y_off = text_data_json['y_off']
         x_scale = text_data_json['x_scale']
         y_scale = text_data_json['y_scale']
+        x_canvas = text_data_json['x_canvas']
+        y_canvas = text_data_json['y_canvas']
         print(message)
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -37,7 +39,9 @@ class DocumentConsumer(AsyncWebsocketConsumer):
                 'x_off': x_off,
                 'y_off': y_off,
                 'x_scale': x_scale,
-                'y_scale': y_scale
+                'y_scale': y_scale,
+                'x_canvas': x_canvas,
+                'y_canvas': y_canvas
             }
         )
 
@@ -47,11 +51,15 @@ class DocumentConsumer(AsyncWebsocketConsumer):
         y_off = event['y_off']
         x_scale = event['x_scale']
         y_scale = event['y_scale']
+        x_canvas = event['x_canvas']
+        y_canvas = event['y_canvas']
         print(message)
         await self.send(text_data=json.dumps({
             'message': message,
             'x_off': x_off,
             'y_off': y_off,
             'x_scale': x_scale,
-            'y_scale': y_scale
+            'y_scale': y_scale,
+            'x_canvas': x_canvas,
+            'y_canvas': y_canvas
         }))
