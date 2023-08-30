@@ -34,7 +34,6 @@ class Document(Model):
         info = {
             "document_id": self.document_id,
             "name": self.document_name,
-            "document_team": self.document_team,
             "document_allowed_editors": self.document_allowed_editors,
             "size": self.document_saves.last().size(),
             "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),

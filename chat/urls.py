@@ -8,4 +8,5 @@ urlpatterns = [
     path('get_team_chat_history', get_team_chat_history, name='get_team_chat_history'),
     path('search_chat_message', search_chat_message, name='search_chat_message'),
     path('create_private_chat', create_private_chat, name='create_private_chat'),
+    path('acquire_private_chat', acquire_private_chat, name='acquire_private_chat'),
 ]
