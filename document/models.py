@@ -24,7 +24,8 @@ class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
     document_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
-    document_allowed_editors = ManyToManyField('user.User')
+    document_allow_edit = BooleanField(default=False)
+    document_allow_check = BooleanField(default=False)
     document_saves = ManyToManyField(SavedDocument)
     document_create_time = DateTimeField(null=True, auto_now_add=True)
     document_recycle = BooleanField(default=False)
@@ -35,7 +36,7 @@ class Document(Model):
             "document_id": self.document_id,
             "name": self.document_name,
             "document_allowed_editors": self.document_allowed_editors,
-            "size": self.document_saves.last().size(),
+            "size": 1, # self.document_saves.last().size(),
             "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
             "editable": self.document_editable,
             "save_id": self.document_saves.last().sd_id
@@ -66,7 +67,7 @@ class Prototype(Model):
             "prototype_creator": self.prototype_creator.tm_user_nickname,
             "lastChangeTime": self.prototype_change_time,
             "createTime": self.prototype_create_time,
-            "size": self.prototype_file.size()
+            "size": 1 #self.prototype_file.size()
         }
         return json.dumps(info, ensure_ascii=False)
 
