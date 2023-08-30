@@ -1,3 +1,8 @@
+import os
+import shutil
+
+from django.forms import model_to_dict
+
 from project.models import Project
 from team.models import *
 from message.models import *
@@ -255,3 +260,30 @@ def show_document(request):
     for document in project.document_list:
         document_info_list.append(document.to_json())
     return JsonResponse({"errno": 0, "msg": "返回文件列表成功", "document_info_list": document_info_list})
+
+
+def copy_document(project, old_document):
+    data = model_to_dict(old_document)
+    new_document = Document(**data)
+    new_document.pk = None
+    new_document.requirement_project = project
+    new_document.save()
+    project.project_document.add(new_document)
+    for old_saved_document in old_document.document_saves:
+        data = model_to_dict(old_saved_document)
+        new_saved_document = SavedDocument(**data)
+        new_saved_document.pk = None
+        new_saved_document.sd_document = new_document
+        if old_saved_document.sd_file:
+            old_file_path = old_saved_document.sd_file.path
+            old_file_name, old_file_extension = os.path.splitext(os.path.basename(old_file_path))
+
+            # 假设 new_saved_document 是新的 SavedDocument 实例
+            new_file_id = new_saved_document.pk  # 新文件的 ID
+            new_file_path = f'SavedDocument/{old_file_name}_{new_file_id}{old_file_extension}'
+
+            shutil.copy(old_file_path, new_file_path)
+            new_saved_document.sd_file.name = new_file_path
+        new_saved_document.save()
+        new_document.document_saves.add(new_saved_document)
+    return new_document
