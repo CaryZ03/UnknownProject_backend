@@ -476,4 +476,4 @@ def copy_project(request, user):
     for old_document in old_project.project_document.all():
         copy_document(new_project, old_document)
 
-    return JsonResponse({'errno': 0, 'msg': "项目信息修改成功"})
+    return JsonResponse({'errno': 0, 'msg': "项目复制修改成功"})

@@ -16,4 +16,5 @@ urlpatterns = [
     path('check_project_list_team', check_project_list_team, name='check_project_list_team'),
     path('check_requirement_list', check_requirement_list, name='check_requirement_list'),
     path('search_project_by_name', search_project_by_name, name='search_project_by_name'),
+    path('copy_project', copy_project, name='copy_project'),
 ]
