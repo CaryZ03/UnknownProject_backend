@@ -64,6 +64,7 @@ class Prototype(Model):
     prototype_file = FileField(upload_to='prototype/', max_length=255)
     prototype_create_time = DateTimeField(null=True, auto_now_add=True)
     prototype_change_time = DateTimeField(null=True)
+    prototype_components = JSONField(default=None, null=True)
     prototype_recycle = BooleanField(default=False)
 
     def to_json(self):
