@@ -23,7 +23,7 @@ class SavedDocument(Model):
 class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
-    document_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
+    document_directory = ForeignKey('Directory', on_delete=CASCADE, null=True)
     document_allow_edit = BooleanField(default=False)
     document_allow_check = BooleanField(default=False)
     document_saves = ManyToManyField(SavedDocument)
@@ -42,6 +42,13 @@ class Document(Model):
             "save_id": self.document_saves.last().sd_id
         }
         return json.dumps(info, ensure_ascii=False)
+
+
+class Directory(Model):
+    directory_id = AutoField(primary_key=True)
+    directory_name = CharField(max_length=100)
+    directory_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
+    directory_document = ManyToManyField(Document)
 
 
 class File(Model):
