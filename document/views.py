@@ -467,3 +467,59 @@ def change_document_permission(request, user):
         document.document_allow_edit = False
     document.save()
     return JsonResponse({'errno': 0, 'msg': '修改权限成功'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_document_recycle(request, user):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    recycle = data.get('recycle')
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 4190, 'msg': "该文档类不存在"})
+    document = Document.objects.get(document_id=document_id)
+    project = document.document_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4191, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4192, 'msg': "项目在回收站中，无法操作"})
+    if recycle == "True":
+        if document.document_recycle:
+            return JsonResponse({'errno': 4193, 'msg': '文档已在回收站'})
+        document.document_recycle = True
+    else:
+        if not document.document_recycle:
+            return JsonResponse({'errno': 4194, 'msg': '文档不在回收站'})
+        document.document_recycle = False
+    document.save()
+    return JsonResponse({'errno': 0, 'msg': '修改状态成功'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_prototype_recycle(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    recycle = data.get('recycle')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 4200, 'msg': "该原型不存在"})
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4201, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4202, 'msg': "项目在回收站中，无法操作"})
+    if recycle == "True":
+        if prototype.prototype_recycle:
+            return JsonResponse({'errno': 4203, 'msg': '原型已在回收站'})
+        prototype.prototype_recycle = True
+    else:
+        if not prototype.prototype_recycle:
+            return JsonResponse({'errno': 4204, 'msg': '原型不在回收站'})
+        prototype.prototype_recycle = False
+    prototype.save()
+    return JsonResponse({'errno': 0, 'msg': '修改状态成功.'})

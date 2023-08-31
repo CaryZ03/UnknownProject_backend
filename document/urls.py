@@ -20,4 +20,6 @@ urlpatterns = [
     path('change_prototype', change_prototype, name='change_prototype'),
     path('change_document', change_document, name='change_document'),
     path('change_document_permission', change_document_permission, name='change_document_permission'),
+    path('change_document_recycle', change_document_recycle, name='change_document_recycle'),
+    path('change_prototype_recycle', change_prototype_recycle, name='change_prototype_recycle'),
 ]

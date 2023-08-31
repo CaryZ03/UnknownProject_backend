@@ -204,10 +204,11 @@ def change_recycle_status(request, user):
     if status == "True":
         if project.project_recycle:
             return JsonResponse({'errno': 3144, 'msg': '项目已在回收站'})
+        project.project_recycle = True
     else:
         if not project.project_recycle:
             return JsonResponse({'errno': 3145, 'msg': '项目不在回收站'})
-    project.project_recycle = status
+        project.project_recycle = False
     project.save()
     return JsonResponse({'errno': 0, 'msg': "项目状态修改成功"})
 
