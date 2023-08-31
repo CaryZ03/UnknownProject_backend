@@ -8,7 +8,7 @@ from django.http.response import JsonResponse
 from datetime import timedelta
 from django.core.management.utils import get_random_secret_key
 import json
-
+from team.models import TeamMember
 from user.models import User, UserToken
 from random import randint
 from django.core.cache import cache
@@ -288,6 +288,11 @@ def change_profile(request, user):
     user.user_expire_time = expire_time
     user.user_real_name = real_name
     user.user_visible = visible
+    if TeamMember.objects.filter(tm_user_id=user).exists():
+        team_members = TeamMember.objects.filter(tm_user_id=user)
+        for tm in team_members:
+            tm.tm_user_nickname = user.user_name
+            tm.save()
     user.save()
     return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
 
