@@ -48,6 +48,7 @@ def download_file(request):
 def upload_saved_document(request, user):
     data_json = json.loads(request.body)
     document_id = data_json.get('document_id')
+    document_content = data_json.get('document_content')
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4030, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
@@ -61,8 +62,7 @@ def upload_saved_document(request, user):
         return JsonResponse({'errno': 4032, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
         return JsonResponse({'errno': 4033, 'msg': "文档在回收站中，无法操作"})
-    uploaded_file = request.FILES['file']
-    savedDocument = SavedDocument.objects.create(sd_document=document, sd_file=uploaded_file)
+    savedDocument = SavedDocument.objects.create(sd_document=document, sd_file=document_content)
     document.document_saves.add(savedDocument)
     return JsonResponse({'errno': 0, 'msg': '副本保存成功.'})
 
@@ -108,9 +108,7 @@ def download_saved_document(request, user):
     if document.document_recycle:
         return JsonResponse({'errno': 4053, 'msg': "文档在回收站中，无法操作"})
     recent_save = document.document_saves.last()
-    response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return response
+    return JsonResponse({'errno': 0, 'msg': '返回文档成功', 'document_content': recent_save.sd_file})
 
 
 @csrf_exempt
@@ -180,9 +178,7 @@ def callback_document(request, user):
         if s.sd_id > savedDocument_id:
             s.delete()
     recent_save = document.document_saves.last()
-    response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return response
+    return JsonResponse({'errno': 0, 'msg': '退回存档成功', 'document_content': recent_save.sd_file})
 
 
 @csrf_exempt
@@ -229,9 +225,7 @@ def search_save(request, user):
         return JsonResponse({'errno': 4102, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
         return JsonResponse({'errno': 4103, 'msg': "文档在回收站中，无法操作"})
-    response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return JsonResponse({'errno': 0, 'msg': '查找文档副本成功'})
+    return JsonResponse({'errno': 0, 'msg': '退回存档成功', 'document_content': recent_save.sd_file})
 
 
 @csrf_exempt
@@ -648,3 +642,40 @@ def move_document(request, user):
     new_directory.directory_document.add(document)
     document.document_directory = new_directory
     return JsonResponse({'errno': 0, 'msg': '文件移动成功'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def show_directory_tree(request, user):
+    data = json.loads(request.body)
+    project_id = data.get('project_id')
+    project = Project.objects.get(project_id=project_id)
+    items_info = []
+    for document in project.project_root_directory:
+        document_info = {
+            'value': 'document',
+            'label': document.document_name,
+            'id': document.document_id,
+        }
+        items_info.append(document_info)
+
+    for directory in project.project_directory.all():
+        children_info = []
+        for document in directory:
+            document_info = {
+                'value': 'document',
+                'label': document.document_name,
+                'id': document.document_id,
+            }
+            children_info.append(document_info)
+        directory_info = {
+            'value': 'directory',
+            'label': directory.directory_name,
+            'id': directory.directory_id,
+            'children': children_info
+        }
+        items_info.append(directory_info)
+
+    return JsonResponse({'errno': 0, 'items_info': items_info})
+

@@ -28,4 +28,5 @@ urlpatterns = [
     path('delete_directory', delete_directory, name='delete_directory'),
     path('show_directory', show_directory, name='show_directory'),
     path('move_document', move_document, name='move_document'),
+    path('show_directory_tree', show_directory_tree, name='show_directory_tree'),
 ]

@@ -8,7 +8,7 @@ from team.models import TeamMember
 class SavedDocument(Model):
     sd_id = AutoField(primary_key=True)
     sd_document = ForeignKey('Document', on_delete=CASCADE)
-    sd_file = FileField(upload_to='SavedDocument/', max_length=255, null=True)
+    sd_file = JSONField(default=None, null=True)
     sd_saved_time = DateTimeField(auto_now_add=True)
 
     def to_json(self):
@@ -90,5 +90,5 @@ class Template(Model):
     template_id = AutoField(primary_key=True)
     template_name = CharField(max_length=100)
     template_editable = BooleanField(default=False)
-    template_file = FileField(upload_to='template/', max_length=255)
+    template_file = JSONField(default=None, null=True)
 
