@@ -128,7 +128,7 @@ def show_document_list(request, user):
         return JsonResponse({'errno': 4061, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4062, 'msg': "项目在回收站中，无法操作"})
-    documents = directory.directory_document.add()
+    documents = directory.directory_document.all()
     d_info = []
     for d in documents:
         d_info.append((d.to_json()))
@@ -557,31 +557,18 @@ def create_directory(request, user):
     project_id = data.get('project_id')
     name = data.get('name')
     if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
+        return JsonResponse({'errno': 4210, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4111, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 4211, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
-        return JsonResponse({'errno': 4112, 'msg': "项目在回收站中，无法操作"})
+        return JsonResponse({'errno': 4212, 'msg': "项目在回收站中，无法操作"})
     directory = Directory.objects.create(directory_name=name)
     project.project_directory.add(directory)
     directory.directory_project = project
     directory.save()
     return JsonResponse({'errno': 0, 'msg': '文件夹创建成功', 'directory_id': directory.directory_id})
-
-
-@csrf_exempt
-@login_required
-@require_http_methods(['POST'])
-def save_prototype_components(request, user):
-    data = json.loads(request.body)
-    prototype_id = data.get('prototype_id')
-    prototype_components = data.get('prototype_components')
-    prototype = Prototype.objects.get(prototype_id=prototype_id)
-    prototype.prototype_components = prototype_components
-    prototype.save()
-    return JsonResponse({'errno': 0, 'msg': '参数保存成功'})
 
 
 @csrf_exempt
@@ -601,7 +588,7 @@ def delete_directory(request, user):
         return JsonResponse({'errno': 4042, 'msg': "项目在回收站中，无法操作"})
     project.project_directory.remove(directory)
     directory.delete()
-    return JsonResponse({'errno': 0, 'msg': '文件夹创建成功', 'directory_id': directory.directory_id})
+    return JsonResponse({'errno': 0, 'msg': '文件夹删除成功'})
 
 
 @csrf_exempt
@@ -623,6 +610,19 @@ def show_directory(request, user):
     for directory in directories:
         d_info.append(directory.to_json())
     return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_root_directory.directory_id})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def save_prototype_components(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    prototype_components = data.get('prototype_components')
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    prototype.prototype_components = prototype_components
+    prototype.save()
+    return JsonResponse({'errno': 0, 'msg': '参数保存成功'})
 
 
 @csrf_exempt
