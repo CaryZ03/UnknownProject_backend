@@ -498,12 +498,14 @@ def copy_project(request, user):
         new_prototype.save()
         new_project.project_prototype.add(new_prototype)
 
-    new_root = copy_directory(new_project, old_project.project_root_directory)
-    new_project.project_root_directory = new_root
-    new_recycle = copy_directory(new_project, old_project.project_recycle_bin)
-    new_project.project_recycle_bin = new_recycle
+    if old_project.project_root_directory:
+        new_root = copy_directory(new_project, old_project.project_root_directory)
+        new_project.project_root_directory = new_root
+    if old_project.project_recycle_bin:
+        new_recycle = copy_directory(new_project, old_project.project_recycle_bin)
+        new_project.project_recycle_bin = new_recycle
 
-    for old_directory in old_project.project_directory:
+    for old_directory in old_project.project_directory.all():
         new_directory = copy_directory(new_project, old_directory)
         new_project.project_directory.add(new_directory)
 
