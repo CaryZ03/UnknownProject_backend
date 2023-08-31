@@ -177,8 +177,11 @@ def search_chat_message(request):
                     "private_connect_id": message.cm_private_connect_id,
                     "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
                 }
-
-                search_res.append(message_info)
+                if message.cm_private_connect_id != 0:
+                    if message.cm_private_connect_id == tm_user_id or message.cm_from.user_id == tm_user_id:
+                        search_res.append(message_info)
+                else:
+                    search_res.append(message_info)
 
     return JsonResponse({'search_res': search_res})
 
