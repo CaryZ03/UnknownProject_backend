@@ -273,8 +273,6 @@ def check_profile_self(request, user):
 def change_profile(request, user):
     data_json = json.loads(request.body)
     username = data_json.get('username')
-    password1 = data_json.get('password1')
-    password2 = data_json.get('password2')
     signature = data_json.get('signature')
     real_name = data_json.get('real_name')
     visible = data_json.get('visible')
@@ -284,20 +282,14 @@ def change_profile(request, user):
     #     return JsonResponse({'errno': 1110, 'msg': "用户名不合法"})
     # if not bool(re.match("^[A-Za-z]{2,29}$", str(real_name))):
     #     return JsonResponse({'errno': 1111, 'msg': "真实姓名不合法"})
-    if password1 != password2:
-        return JsonResponse({'errno': 1112, 'msg': "两次输入的密码不同"})
-    elif not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
-        return JsonResponse({'errno': 1113, 'msg': "密码不合法"})
-    else:
-        user.user_name = username
-        user.user_password = password1
-        user.user_signature = signature
-        user.user_tel = tel
-        user.user_expire_time = expire_time
-        user.user_real_name = real_name
-        user.user_visible = visible
-        user.save()
-        return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
+    user.user_name = username
+    user.user_signature = signature
+    user.user_tel = tel
+    user.user_expire_time = expire_time
+    user.user_real_name = real_name
+    user.user_visible = visible
+    user.save()
+    return JsonResponse({'errno': 0, 'msg': '修改用户信息成功'})
 
 
 @csrf_exempt
