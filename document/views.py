@@ -51,7 +51,8 @@ def upload_saved_document(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4030, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not document.document_allow_edit:
         if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
@@ -72,17 +73,18 @@ def upload_saved_document(request, user):
 def create_document(request, user):
     data_json = json.loads(request.body)
     document_name = data_json.get('document_name')
-    project_id = data_json.get('project_id')
-    if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 4040, 'msg': "该项目不存在"})
-    project = Project.objects.get(project_id=project_id)
+    directory_id = data_json.get('directory_id')
+    if not Directory.objects.filter(directory_id=directory_id).exists():
+        return JsonResponse({'errno': 4040, 'msg': "该文件夹不存在"})
+    directory = Directory.objects.get(directory_id=directory_id)
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4041, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4042, 'msg': "项目在回收站中，无法操作"})
-    document = Document.objects.create(document_name=document_name, document_project=project)
-    project.project_document.add(document)
+    document = Document.objects.create(document_name=document_name, document_directory=directory)
+    directory.directory_document.add(document)
     return JsonResponse({'errno': 0, 'msg': '创建文档成功', 'document_id': document.document_id})
 
 
@@ -95,7 +97,8 @@ def download_saved_document(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4050, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not document.document_allow_check:
         if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
@@ -107,7 +110,7 @@ def download_saved_document(request, user):
     recent_save = document.document_saves.last()
     response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return JsonResponse({'errno': 0, 'msg': '文档获取成功', 'document_id': document.document_id})
+    return response
 
 
 @csrf_exempt
@@ -115,17 +118,17 @@ def download_saved_document(request, user):
 @require_http_methods(['POST'])
 def show_document_list(request, user):
     data = json.loads(request.body)
-    project_id = data.get('project_id')
-    recycle = data.get('recycle')
-    if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 4060, 'msg': "该项目不存在"})
-    project = Project.objects.get(project_id=project_id)
+    directory_id = data.get('directory_id')
+    if not Directory.objects.filter(directory_id=directory_id).exists():
+        return JsonResponse({'errno': 4040, 'msg': "该文件夹不存在"})
+    directory = Directory.objects.get(directory_id=directory_id)
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4061, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4062, 'msg': "项目在回收站中，无法操作"})
-    documents = project.project_document.filter(document_recycle=recycle)
+    documents = directory.directory_document.add()
     d_info = []
     for d in documents:
         d_info.append((d.to_json()))
@@ -141,13 +144,14 @@ def delete_document(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4070, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4071, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4072, 'msg': "项目在回收站中，无法操作"})
-    project.project_document.remove(document)
+    directory.directory_document.remove()
     document.delete()
     return JsonResponse({'errno': 0, 'msg': '文档删除成功'})
 
@@ -162,7 +166,8 @@ def callback_document(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4080, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4081, 'msg': "当前用户不在该团队内"})
@@ -177,7 +182,7 @@ def callback_document(request, user):
     recent_save = document.document_saves.last()
     response = HttpResponse(recent_save.sd_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{recent_save.sd_file.name}"'
-    return JsonResponse({'errno': 0, 'msg': '文档回滚成功.'})
+    return response
 
 
 @csrf_exempt
@@ -189,7 +194,8 @@ def show_save(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4090, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4091, 'msg': "当前用户不在该团队内"})
@@ -214,7 +220,8 @@ def search_save(request, user):
         return JsonResponse({'errno': 4100, 'msg': "该副本不存在"})
     recent_save = SavedDocument.objects.get(sd_id=save_id)
     document = recent_save.sd_document
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4101, 'msg': "当前用户不在该团队内"})
@@ -395,7 +402,7 @@ def search_prototype(request, user):
         return JsonResponse({'errno': 4153, 'msg': "原型在回收站中，无法操作"})
     response = HttpResponse(prototype.prototype_file.read(), content_type='application/octet-stream')
     response['Content-Disposition'] = f'attachment; filename="{prototype.prototype_file.name}"'
-    return JsonResponse({'errno': 0, 'msg': '查找原型成功.'})
+    return response
 
 
 @csrf_exempt
@@ -430,7 +437,6 @@ def change_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
     document_name = data.get('document_name')
-    document_recycle = data.get('document_recycle')
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4170, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
@@ -442,10 +448,9 @@ def change_document(request, user):
         return JsonResponse({'errno': 4172, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
         return JsonResponse({'errno': 4173, 'msg': "文档在回收站中，无法操作"})
-    document.document_recycle = document_recycle
     document.document_name = document_name
     document.save()
-    return JsonResponse({'errno': 0, 'msg': '文档回滚成功.'})
+    return JsonResponse({'errno': 0, 'msg': '文档修改成功.'})
 
 
 @csrf_exempt
@@ -458,7 +463,8 @@ def change_document_permission(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4180, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4181, 'msg': "当前用户不在该团队内"})
@@ -492,7 +498,8 @@ def change_document_recycle(request, user):
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4190, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
-    project = document.document_project
+    directory = document.document_directory
+    project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
         return JsonResponse({'errno': 4191, 'msg': "当前用户不在该团队内"})

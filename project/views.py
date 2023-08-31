@@ -17,7 +17,7 @@ from document.views import copy_document, copy_directory
 from user.models import User, UserToken
 from team.models import Team, TeamMember, TeamApplicant
 from .models import Project, Requirement
-from document.models import Document, Prototype
+from document.models import Document, Prototype, Directory
 import base64
 from django.core.files.base import ContentFile
 from user.views import login_required, not_login_required, get_avatar_base64
@@ -52,6 +52,14 @@ def create_project(request, user):
     user.user_created_projects.add(new_project)
     new_project.project_estimated_end_time = estimated_end_time
     new_project.project_estimated_start_time = estimated_start_time
+    new_directory = Directory.objects.create()
+    new_directory.directory_project = new_project
+    new_directory.save()
+    new_project.project_root_directory = new_directory
+    new_recycle = Directory.objects.create()
+    new_recycle.directory_project = new_project
+    new_recycle.save()
+    new_project.project_recycle_bin = new_recycle
     new_project.save()
     return JsonResponse({'errno': 0, 'msg': "项目创建成功"})
 
