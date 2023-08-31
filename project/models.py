@@ -29,6 +29,7 @@ class Project(Model):
     project_prototype = ManyToManyField('document.Prototype')
     project_root_directory = ForeignKey('document.Directory', on_delete=SET_NULL, null=True, related_name='root_directory')
     project_directory = ManyToManyField('document.Directory', related_name='normal_directory')
+    project_recycle_bin = ForeignKey('document.Directory', on_delete=SET_NULL, null=True, related_name='recycle_directory')
 
     def to_json(self):
         info = {
