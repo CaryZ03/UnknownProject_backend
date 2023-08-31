@@ -416,8 +416,8 @@ def change_prototype(request, user):
 def change_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
-    document_name = data.get('name')
-    document_recycle = data.get('recycle')
+    document_name = data.get('document_name')
+    document_recycle = data.get('document_recycle')
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4170, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
