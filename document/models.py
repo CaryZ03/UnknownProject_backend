@@ -68,7 +68,6 @@ class Prototype(Model):
     prototype_name = CharField(max_length=100)
     prototype_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     prototype_creator = ForeignKey('team.TeamMember', on_delete=CASCADE)
-    prototype_file = FileField(upload_to='prototype/', max_length=255)
     prototype_create_time = DateTimeField(null=True, auto_now_add=True)
     prototype_change_time = DateTimeField(null=True)
     prototype_components = JSONField(default=None, null=True)

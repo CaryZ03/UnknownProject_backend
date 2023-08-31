@@ -241,6 +241,7 @@ def create_prototype(request, user):
     data_json = json.loads(request.body)
     prototype_name = data_json.get('prototype_name')
     project_id = data_json.get('project_id')
+    prototype_components = data_json.get('prototype_components')
     if not Project.objects.filter(project_id=project_id).exists():
         return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
@@ -252,8 +253,7 @@ def create_prototype(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=team_member)
     prototype.prototype_change_time = prototype.prototype_create_time
-    # uploaded_file = request.FILES['file']
-    # prototype.prototype_file = uploaded_file
+    prototype.prototype_components = prototype_components
     prototype.save()
     project.project_prototype.add(prototype)
     return JsonResponse({'errno': 0, 'message': '原型新建成功'})
@@ -400,9 +400,8 @@ def search_prototype(request, user):
         return JsonResponse({'errno': 4152, 'msg': "项目在回收站中，无法操作"})
     if prototype.prototype_recycle:
         return JsonResponse({'errno': 4153, 'msg': "原型在回收站中，无法操作"})
-    response = HttpResponse(prototype.prototype_file.read(), content_type='application/octet-stream')
-    response['Content-Disposition'] = f'attachment; filename="{prototype.prototype_file.name}"'
-    return response
+    prototype_components = prototype.prototype_components
+    return JsonResponse({'errno': 0, 'msg': '查找原型成功', 'components': prototype_components})
 
 
 @csrf_exempt

@@ -24,4 +24,8 @@ urlpatterns = [
     path('change_prototype_recycle', change_prototype_recycle, name='change_prototype_recycle'),
     path('save_prototype_components', save_prototype_components, name='save_prototype_components'),
     path('get_prototype_components', get_prototype_components, name='get_prototype_components'),
+    path('create_directory', create_directory, name='create_directory'),
+    path('delete_directory', delete_directory, name='delete_directory'),
+    path('show_directory', show_directory, name='show_directory'),
+
 ]
