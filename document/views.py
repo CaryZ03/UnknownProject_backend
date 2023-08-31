@@ -575,6 +575,19 @@ def create_directory(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
+def save_prototype_components(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    prototype_components = data.get('prototype_components')
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    prototype.prototype_components = prototype_components
+    prototype.save()
+    return JsonResponse({'errno': 0, 'msg': '参数保存成功'})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
 def delete_directory(request, user):
     data = json.loads(request.body)
     directory_id = data.get('directory_id')
@@ -611,3 +624,14 @@ def show_directory(request, user):
     for directory in directories:
         d_info.append(directory.to_json())
     return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_root_directory.directory_id})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def get_prototype_components(request, user):
+    data = json.loads(request.body)
+    prototype_id = data.get('prototype_id')
+    prototype = Prototype.objects.get(prototype_id=prototype_id)
+    prototype_components = prototype.prototype_components
+    return JsonResponse({'errno': 0, 'msg': '参数返回成功', 'components': prototype_components})

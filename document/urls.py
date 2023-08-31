@@ -22,4 +22,6 @@ urlpatterns = [
     path('change_document_permission', change_document_permission, name='change_document_permission'),
     path('change_document_recycle', change_document_recycle, name='change_document_recycle'),
     path('change_prototype_recycle', change_prototype_recycle, name='change_prototype_recycle'),
+    path('save_prototype_components', save_prototype_components, name='save_prototype_components'),
+    path('get_prototype_components', get_prototype_components, name='get_prototype_components'),
 ]
