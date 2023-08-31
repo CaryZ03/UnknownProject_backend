@@ -195,10 +195,16 @@ def create_private_chat(request):
     team = Team.objects.get(team_id=team_id)
     team_member1 = TeamMember.objects.get(tm_user_id=user1, tm_team_id=team)
     team_member2 = TeamMember.objects.get(tm_user_id=user2, tm_team_id=team)
-    new_private_chat = PrivateChat.objects.create()
-    new_private_chat.pc_members.add(team_member1)
-    new_private_chat.pc_members.add(team_member2)
-    new_private_chat.save()
+    private_chats1 = PrivateChat.objects.filter(pc_members=team_member1)
+    private_chats2 = PrivateChat.objects.filter(pc_members=team_member2)
+    common_chats = private_chats1.intersection(private_chats2)
+    if common_chats.exists():
+        return JsonResponse({'msg': '已有私聊，创建私聊失败'})
+    else:
+        new_private_chat = PrivateChat.objects.create()
+        new_private_chat.pc_members.add(team_member1)
+        new_private_chat.pc_members.add(team_member2)
+        new_private_chat.save()
 
     return JsonResponse({'msg': "创建私聊成功"})
 
