@@ -679,3 +679,20 @@ def show_directory_tree(request, user):
 
     return JsonResponse({'errno': 0, 'items_info': items_info, 'root_id': project.project_root_directory.directory_id})
 
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def search_document(request, user):
+    data = json.loads(request.body)
+    document_id = data.get('document_id')
+    if not Directory.objects.filter(directory_id=directory_id).exists():
+        return JsonResponse({'errno': 4040, 'msg': "该文件类不存在"})
+    document = Document.objects.get(document_id=document_id)
+    project = document.document_directory.directory_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4061, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4062, 'msg': "项目在回收站中，无法操作"})
+    return JsonResponse({'errno': 0, 'msg': "文档查询成功", 'document_info': document.to_json()})
