@@ -442,3 +442,31 @@ def acquire_unread_message(request):
     unread_message_count = chat_messages.count()
 
     return JsonResponse({"unread_message_count": unread_message_count})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def get_group_chat_members(request):
+    data = json.loads(request.body)
+    gc_id = data.get('gc_id')
+    gc = GroupChat.objects.get(gc_id=gc_id)
+
+    members_info = []
+
+    creator_info = {
+        'user_id': gc.gc_creator.tm_user_id.user_id,
+        'user_name': gc.gc_creator.tm_user_id.user_name,
+        'is_creator': True
+    }
+    members_info.append(creator_info)
+
+    for member in gc.gc_members.all():
+        member_info = {
+            'user_id': member.tm_user_id.user_id,
+            'user_name': member.tm_user_id.user_name,
+            'is_creator': False
+        }
+        members_info.append(member_info)
+
+    return JsonResponse({'members': members_info})
+
