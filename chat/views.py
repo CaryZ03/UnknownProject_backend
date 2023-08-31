@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
-from datetime import timedelta
+from datetime import timedelta, datetime
 from user.models import *
 from team.models import *
 from message.models import *
@@ -293,9 +293,10 @@ def create_group_chat(request):
     creator = User.objects.get(user_id=creator_id)
     users_id = data.get('users_id', [])
     team_id = data.get('team_id')
+    gc_name = data.get('gc_name')
     team = Team.objects.get(team_id=team_id)
     team_member_creator = TeamMember.objects.get(tm_user_id=creator, tm_team_id=team)
-    new_group_chat = GroupChat.objects.create(gc_creator=team_member_creator)
+    new_group_chat = GroupChat.objects.create(gc_creator=team_member_creator, gc_name=gc_name)
     for user_id in users_id:
         joiner = User.objects.get(user_id=user_id)
         team_member_joiner = TeamMember.objects.get(tm_user_id=joiner, tm_team_id=team)
@@ -399,3 +400,45 @@ def get_group_chat_history(request):
         message_list.append(message_info)
 
     return JsonResponse({"chat_history": message_list})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def update_leave_message(request):
+    data = json.loads(request.body)
+    user_id = data.get('user_id')
+    chat_id = data.get('chat_id')
+    chat_type = data.get('chat_type')
+    user = User.objects.get(user_id=user_id)
+    leave_record, created = LeaveHistory.objects.get_or_create(user=user, chat_id=chat_id, chat_type=chat_type)
+    leave_record.leave_time = datetime.now()
+    leave_record.save()
+
+    return JsonResponse({"msg": "更新离开时间成功", "leave_time": leave_record.leave_time})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def acquire_unread_message(request):
+    data = json.loads(request.body)
+    user_id = data.get('user_id')
+    chat_id = data.get('chat_id')
+    chat_type = data.get('chat_type')
+    user = User.objects.get(user_id=user_id)
+    leave_record = LeaveHistory.objects.get(user=user, chat_type=chat_type, chat_id=chat_id)
+    leave_time = leave_record.leave_time
+
+    if chat_type == "team_chat":
+        team = Team.objects.get(team_id=chat_id)
+        team_chat = team.team_chat
+        chat_messages = team_chat.tc_history.filter(cm_create_time__gt=leave_time)
+    elif chat_type == "private_chat":
+        pc = PrivateChat.objects.get(pc_id=chat_id)
+        chat_messages = pc.pc_history.filter(cm_create_time__gt=leave_time)
+    elif chat_type == "group_chat":
+        gc = GroupChat.objects.get(gc_id=chat_id)
+        chat_messages = gc.gc_history.filter(cm_create_time__gt=leave_time)
+
+    unread_message_count = chat_messages.count()
+
+    return JsonResponse({"unread_message_count": unread_message_count})
