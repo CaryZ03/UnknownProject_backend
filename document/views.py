@@ -53,8 +53,9 @@ def upload_saved_document(request, user):
     document = Document.objects.get(document_id=document_id)
     project = document.document_project
     team = project.project_team
-    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4031, 'msg': "当前用户不在该团队内"})
+    if not document.document_allow_edit:
+        if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+            return JsonResponse({'errno': 4031, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4032, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
@@ -96,8 +97,9 @@ def download_saved_document(request, user):
     document = Document.objects.get(document_id=document_id)
     project = document.document_project
     team = project.project_team
-    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists() and not document.document_allowed_editors.filter(user_id=user.user_id).exists():
-        return JsonResponse({'errno': 4051, 'msg': "当前用户不在该团队内"})
+    if not document.document_allow_check:
+        if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+            return JsonResponse({'errno': 4051, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
         return JsonResponse({'errno': 4052, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
@@ -436,10 +438,10 @@ def change_document(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def document_allow_user(request, user):
+def change_document_permission(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
-    user_id = data.get('user_id')
+    permission = data.get('permission')
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4180, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
@@ -454,42 +456,14 @@ def document_allow_user(request, user):
         return JsonResponse({'errno': 4183, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
         return JsonResponse({'errno': 4184, 'msg': "文档在回收站中，无法操作"})
-    if User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 4185, 'msg': "添加用户不存在"})
-    if document.document_allowed_editors.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 4186, 'msg': "该用户已有查看权限"})
-    change_user = User.objects.get(user_id=user_id)
-    document.document_allowed_editors.add(change_user)
+    if permission == "edit":
+        document.document_allow_check = True
+        document.document_allow_edit = True
+    elif permission == "check":
+        document.document_allow_check = True
+        document.document_allow_edit = False
+    else:
+        document.document_allow_check = False
+        document.document_allow_edit = False
     document.save()
-    return JsonResponse({'errno': 0, 'msg': '添加用户成功'})
-
-
-@csrf_exempt
-@login_required
-@require_http_methods(['POST'])
-def document_delete_user(request, user):
-    data = json.loads(request.body)
-    document_id = data.get('document_id')
-    user_id = data.get('user_id')
-    if not Document.objects.filter(document_id=document_id).exists():
-        return JsonResponse({'errno': 4190, 'msg': "该文档类不存在"})
-    document = Document.objects.get(document_id=document_id)
-    project = document.document_project
-    team = project.project_team
-    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4191, 'msg': "当前用户不在该团队内"})
-    team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
-    if team_member.tm_user_permissions == "member":
-        return JsonResponse({'errno': 4192, 'msg': "当前用户权限不足"})
-    if project.project_recycle:
-        return JsonResponse({'errno': 4193, 'msg': "项目在回收站中，无法操作"})
-    if document.document_recycle:
-        return JsonResponse({'errno': 4194, 'msg': "文档在回收站中，无法操作"})
-    if User.objects.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 4195, 'msg': "删除用户不存在"})
-    if document.document_allowed_editors.filter(user_id=user_id).exists():
-        return JsonResponse({'errno': 4196, 'msg': "该用户未有查看权限"})
-    change_user = User.objects.get(user_id=user_id)
-    document.document_allowed_editors.remove(change_user)
-    document.save()
-    return JsonResponse({'errno': 0, 'msg': '删除用户成功'})
+    return JsonResponse({'errno': 0, 'msg': '修改权限成功'})
