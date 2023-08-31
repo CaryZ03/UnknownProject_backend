@@ -654,9 +654,9 @@ def show_directory_tree(request, user):
     items_info = []
     for document in project.project_root_directory:
         document_info = {
-            'value': 'document',
-            'label': document.document_name,
             'id': document.document_id,
+            'label': document.document_name,
+            'isFolder': False,
         }
         items_info.append(document_info)
 
@@ -664,15 +664,15 @@ def show_directory_tree(request, user):
         children_info = []
         for document in directory:
             document_info = {
-                'value': 'document',
-                'label': document.document_name,
                 'id': document.document_id,
+                'label': document.document_name,
+                'isFolder': False
             }
             children_info.append(document_info)
         directory_info = {
-            'value': 'directory',
-            'label': directory.directory_name,
             'id': directory.directory_id,
+            'label': directory.directory_name,
+            'isFolder': True,
             'children': children_info
         }
         items_info.append(directory_info)
