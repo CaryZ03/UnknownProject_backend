@@ -339,15 +339,15 @@ def show_prototype_list(request, user):
     return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'protoTable': p_info})
 
 
-def copy_document(project, old_document):
+def copy_document(new_directory, old_document):
     new_document = Document()
     new_document.document_name = old_document.document_name
-    new_document.document_project = project
+    new_document.document_directory = new_directory
     new_document.document_recycle = old_document.document_recycle
     new_document.document_editable = old_document.document_editable
 
     new_document.save()
-    project.project_document.add(new_document)
+    new_directory.directory_document.add(new_document)
     for old_saved_document in old_document.document_saves:
         new_saved_document = SavedDocument()
         new_saved_document.sd_saved_time = old_saved_document.sd_saved_time
@@ -365,6 +365,19 @@ def copy_document(project, old_document):
         new_saved_document.save()
         new_document.document_saves.add(new_saved_document)
     return new_document
+
+
+def copy_directory(new_project, old_directory):
+    new_directory = Directory()
+    new_directory.directory_name = old_directory.directory_name
+    new_directory.directory_project = new_project
+
+    new_directory.save()
+
+    for old_document in old_directory.directory_document:
+        copy_document(new_directory, old_document)
+
+    return new_directory
 
 
 @csrf_exempt
