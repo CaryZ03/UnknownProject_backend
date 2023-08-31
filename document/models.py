@@ -65,8 +65,8 @@ class Prototype(Model):
             "name": self.prototype_name,
             "prototype_project": self.prototype_project.project_id,
             "prototype_creator": self.prototype_creator.tm_user_nickname,
-            "lastChangeTime": self.prototype_change_time,
-            "createTime": self.prototype_create_time,
+            "lastChangeTime": self.prototype_change_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "createTime": self.prototype_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "size": 1 #self.prototype_file.size()
         }
         return json.dumps(info, ensure_ascii=False)
