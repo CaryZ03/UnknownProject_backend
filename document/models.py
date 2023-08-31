@@ -50,6 +50,13 @@ class Directory(Model):
     directory_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     directory_document = ManyToManyField(Document)
 
+    def to_json(self):
+        info = {
+            "directory_id": self.directory_id,
+            "directory_name": self.directory_name
+        }
+        return json.dumps(info, ensure_ascii=False)
+
 
 class File(Model):
     file_id = AutoField(primary_key=True)
