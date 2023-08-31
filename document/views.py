@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from project.models import Project
 from team.models import *
 from message.models import *
-from .models import File, Document, SavedDocument, Prototype
+from .models import File, Document, SavedDocument, Prototype, Directory
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -335,15 +335,15 @@ def show_prototype_list(request, user):
     return JsonResponse({'errno': 0, 'msg': '返回原型列表成功', 'protoTable': p_info})
 
 
-def copy_document(project, old_document):
+def copy_document(new_directory, old_document):
     new_document = Document()
     new_document.document_name = old_document.document_name
-    new_document.document_project = project
+    new_document.document_directory = new_directory
     new_document.document_recycle = old_document.document_recycle
     new_document.document_editable = old_document.document_editable
 
     new_document.save()
-    project.project_document.add(new_document)
+    new_directory.directory_document.add(new_document)
     for old_saved_document in old_document.document_saves:
         new_saved_document = SavedDocument()
         new_saved_document.sd_saved_time = old_saved_document.sd_saved_time
@@ -359,6 +359,20 @@ def copy_document(project, old_document):
             shutil.copy(old_file_path, new_file_path)
             new_saved_document.sd_file.name = new_file_path
         new_saved_document.save()
+        new_document.document_saves.add(new_saved_document)
+    return new_document
+
+
+def copy_directory(new_project, old_directory):
+    new_directory = Directory()
+    new_directory.directory_name = old_directory.directory_name
+    new_directory.directory_project = new_project
+    new_directory.directory_editable = old_directory.directory_editable
+
+    new_directory.save()
+    new_directory.directory_directory.add(new_directory)
+    for old_saved_directory in old_document.document_saves:
+
         new_document.document_saves.add(new_saved_document)
     return new_document
 

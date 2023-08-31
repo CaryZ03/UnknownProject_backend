@@ -24,6 +24,7 @@ class Document(Model):
     document_id = AutoField(primary_key=True)
     document_name = CharField(max_length=100)
     document_directory = ForeignKey('Directory', on_delete=CASCADE, null=True)
+    document_project = ForeignKey('project.Project', on_delete=CASCADE, null=True)
     document_allow_edit = BooleanField(default=False)
     document_allow_check = BooleanField(default=False)
     document_saves = ManyToManyField(SavedDocument)
