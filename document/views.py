@@ -241,7 +241,6 @@ def create_prototype(request, user):
     data_json = json.loads(request.body)
     prototype_name = data_json.get('prototype_name')
     project_id = data_json.get('project_id')
-    prototype_components = data_json.get('prototype_components')
     if not Project.objects.filter(project_id=project_id).exists():
         return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
@@ -253,7 +252,6 @@ def create_prototype(request, user):
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
     prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=team_member)
     prototype.prototype_change_time = prototype.prototype_create_time
-    prototype.prototype_components = prototype_components
     prototype.save()
     project.project_prototype.add(prototype)
     return JsonResponse({'errno': 0, 'message': '原型新建成功'})
@@ -634,3 +632,24 @@ def get_prototype_components(request, user):
     prototype = Prototype.objects.get(prototype_id=prototype_id)
     prototype_components = prototype.prototype_components
     return JsonResponse({'errno': 0, 'msg': '参数返回成功', 'components': prototype_components})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def move_(request, user):
+    data = json.loads(request.body)
+    project_id = data.get('project_id')
+    if not Project.objects.filter(project_id=project_id).exists():
+        return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
+    project = Project.objects.get(project_id=project_id)
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4111, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4112, 'msg': "项目在回收站中，无法操作"})
+    directories = project.project_directory.all()
+    d_info = []
+    for directory in directories:
+        d_info.append(directory.to_json())
+    return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_root_directory.directory_id})
