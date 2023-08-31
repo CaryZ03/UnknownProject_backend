@@ -20,4 +20,6 @@ urlpatterns = [
     path('get_group_chat_members', get_group_chat_members, name='get_group_chat_members'),
     path('search_private_chat_message', search_private_chat_message, name='search_private_chat_message'),
     path('search_group_chat_message', search_group_chat_message, name='search_group_chat_message'),
+    path('group_invite_member', group_invite_member, name='group_invite_member'),
+    path('group_delete_member', group_delete_member, name='group_delete_member'),
 ]

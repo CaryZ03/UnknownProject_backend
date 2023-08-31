@@ -568,3 +568,35 @@ def search_group_chat_message(request):
                     search_res.append(message_info)
 
     return JsonResponse({'search_res': search_res})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def group_invite_member(request):
+    data = json.loads(request.body)
+    gc_id = data.get('gc_id')
+    array_data = data.get('array_data', [])
+    gc = GroupChat.objects.get(gc_id=gc_id)
+    team = gc.gc_team
+    for user_id in array_data:
+        user = User.objects.get(user_id=user_id)
+        team_member = TeamMember.objects.get(tm_user_id=user, tm_team_id=team)
+        gc.gc_members.add(team_member)
+    gc.save()
+    return JsonResponse({'msg': "邀请成功"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def group_delete_member(request):
+    data = json.loads(request.body)
+    gc_id = data.get('gc_id')
+    array_data = data.get('array_data', [])
+    gc = GroupChat.objects.get(gc_id=gc_id)
+    team = gc.gc_team
+    for user_id in array_data:
+        user = User.objects.get(user_id=user_id)
+        team_member = TeamMember.objects.get(tm_user_id=user, tm_team_id=team)
+        gc.gc_members.remove(team_member)
+    gc.save()
+    return JsonResponse({'msg': "删除成功"})
