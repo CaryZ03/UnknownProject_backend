@@ -27,5 +27,5 @@ urlpatterns = [
     path('create_directory', create_directory, name='create_directory'),
     path('delete_directory', delete_directory, name='delete_directory'),
     path('show_directory', show_directory, name='show_directory'),
-
+    path('move_document', move_document, name='move_document'),
 ]

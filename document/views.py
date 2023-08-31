@@ -637,19 +637,14 @@ def get_prototype_components(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
-def move_(request, user):
+def move_document(request, user):
     data = json.loads(request.body)
-    project_id = data.get('project_id')
-    if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
-    project = Project.objects.get(project_id=project_id)
-    team = project.project_team
-    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4111, 'msg': "当前用户不在该团队内"})
-    if project.project_recycle:
-        return JsonResponse({'errno': 4112, 'msg': "项目在回收站中，无法操作"})
-    directories = project.project_directory.all()
-    d_info = []
-    for directory in directories:
-        d_info.append(directory.to_json())
-    return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_root_directory.directory_id})
+    document_id = data.get('document_id')
+    directory_id = data.get('directory_id')
+    document = Document.objects.get(document_id=document_id)
+    old_directory = document.document_directory
+    old_directory.directory_document.remove(document)
+    new_directory = Directory.objects.get(directory_id=directory_id)
+    new_directory.directory_document.add(document)
+    document.document_directory = new_directory
+    return JsonResponse({'errno': 0, 'msg': '文件移动成功'})
