@@ -99,7 +99,7 @@ def store_message(request):
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type,
                                                       cm_private_connect_id=private_connect_id)
 
-    if message_type == 'file':
+    if message_type == 'file' or message_type == 'image':
         file_id = data.get('file_id')
         file = File.objects.get(file_id=file_id)
         new_chat_message.cm_file = file
@@ -120,7 +120,7 @@ def get_team_chat_history(request):
 
     message_list = []
     for message in chat_messages:
-        if message.cm_type == 'file':
+        if message.cm_type == 'file' or message.cm_type == 'image':
             file_id = message.cm_file.file_id
         else:
             file_id = 0
@@ -159,7 +159,7 @@ def search_chat_message(request):
         for message in chat_messages:
             message_content = message.cm_content
             if search_info.lower() in message_content.lower():
-                if message.cm_type == 'file':
+                if message.cm_type == 'file' or message.cm_type == 'image':
                     file_id = message.cm_file.file_id
                 else:
                     file_id = 0
@@ -250,7 +250,7 @@ def store_private_message(request):
 
     new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
 
-    if message_type == 'file':
+    if message_type == 'file' or message_type == 'image':
         file_id = data.get('file_id')
         file = File.objects.get(file_id=file_id)
         new_chat_message.cm_file = file
@@ -270,7 +270,7 @@ def get_private_chat_history(request):
 
     message_list = []
     for message in chat_messages:
-        if message.cm_type == 'file':
+        if message.cm_type == 'file' or message.cm_type == 'image':
             file_id = message.cm_file.file_id
         else:
             file_id = 0
@@ -364,7 +364,7 @@ def store_group_message(request):
     else:
         new_chat_message = ChatMessage.objects.create(cm_from=user, cm_content=message, cm_type=message_type)
 
-    if message_type == 'file':
+    if message_type == 'file' or message_type == 'image':
         file_id = data.get('file_id')
         file = File.objects.get(file_id=file_id)
         new_chat_message.cm_file = file
@@ -384,7 +384,7 @@ def get_group_chat_history(request):
 
     message_list = []
     for message in chat_messages:
-        if message.cm_type == 'file':
+        if message.cm_type == 'file' or message.cm_type == 'image':
             file_id = message.cm_file.file_id
         else:
             file_id = 0
@@ -491,7 +491,7 @@ def search_private_chat_message(request):
             for message in chat_messages:
                 message_content = message.cm_content
                 if search_info.lower() in message_content.lower():
-                    if message.cm_type == 'file':
+                    if message.cm_type == 'file' or message.cm_type == 'image':
                         file_id = message.cm_file.file_id
                     else:
                         file_id = 0
@@ -527,7 +527,7 @@ def search_group_chat_message(request):
             for message in chat_messages1:
                 message_content = message.cm_content
                 if search_info.lower() in message_content.lower():
-                    if message.cm_type == 'file':
+                    if message.cm_type == 'file' or message.cm_type == 'image':
                         file_id1 = message.cm_file.file_id
                     else:
                         file_id1 = 0
@@ -551,7 +551,7 @@ def search_group_chat_message(request):
             for message in chat_messages2:
                 message_content = message.cm_content
                 if search_info.lower() in message_content.lower():
-                    if message.cm_type == 'file':
+                    if message.cm_type == 'file' or message.cm_type == 'image':
                         file_id2 = message.cm_file.file_id
                     else:
                         file_id2 = 0
