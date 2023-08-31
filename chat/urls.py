@@ -15,4 +15,7 @@ urlpatterns = [
     path('acquire_group_chat', acquire_group_chat, name='acquire_group_chat'),
     path('store_group_message', store_group_message, name='store_group_message'),
     path('get_group_chat_history', get_group_chat_history, name='get_group_chat_history'),
+    path('update_leave_message', update_leave_message, name='update_leave_message'),
+    path('acquire_unread_message', acquire_unread_message, name='acquire_unread_message'),
+    path('get_group_chat_members', get_group_chat_members, name='get_group_chat_members'),
 ]
