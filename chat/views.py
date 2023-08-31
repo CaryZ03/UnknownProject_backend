@@ -470,3 +470,101 @@ def get_group_chat_members(request):
 
     return JsonResponse({'members': members_info})
 
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_private_chat_message(request):
+    data = json.loads(request.body)
+    user_id = data.get('user_id')
+    search_info = data.get('search_info')
+    user = User.objects.get(user_id=user_id)
+
+    search_res = []
+
+    for team_member in TeamMember.objects.filter(tm_user_id=user):
+        private_chats = PrivateChat.objects.filter(pc_members=team_member)
+        for pc in private_chats:
+            chat_messages = pc.pc_history.all().order_by('cm_create_time')
+            for message in chat_messages:
+                message_content = message.cm_content
+                if search_info.lower() in message_content.lower():
+                    if message.cm_type == 'file':
+                        file_id = message.cm_file.file_id
+                    else:
+                        file_id = 0
+                    message_info = {
+                        "pc_id": pc.pc_id,
+                        "cm_id": message.cm_id,
+                        "message_content": message_content,
+                        "message_type": message.cm_type,
+                        "message_sender_id": message.cm_from.user_id,
+                        "message_sender_name": message.cm_from.user_name,
+                        "create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "file_id": file_id,
+                    }
+                    search_res.append(message_info)
+
+    return JsonResponse({'search_res': search_res})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_group_chat_message(request):
+    data = json.loads(request.body)
+    user_id = data.get('user_id')
+    search_info = data.get('search_info')
+    user = User.objects.get(user_id=user_id)
+
+    search_res = []
+
+    for team_member in TeamMember.objects.filter(tm_user_id=user):
+        join_group_chats = GroupChat.objects.filter(gc_members=team_member)
+        for jgc in join_group_chats:
+            chat_messages1 = jgc.gc_history.all().order_by('cm_create_time')
+            for message in chat_messages1:
+                message_content = message.cm_content
+                if search_info.lower() in message_content.lower():
+                    if message.cm_type == 'file':
+                        file_id1 = message.cm_file.file_id
+                    else:
+                        file_id1 = 0
+                    message_info = {
+                        "gc_id": jgc.gc_id,
+                        "cm_id": message.cm_id,
+                        "message_content": message_content,
+                        "message_type": message.cm_type,
+                        "message_sender_id": message.cm_from.user_id,
+                        "message_sender_name": message.cm_from.user_name,
+                        "create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "is_at": message.cm_isat,
+                        "is_at_all": message.cm_at_all,
+                        "file_id": file_id1,
+                        "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
+                    }
+                    search_res.append(message_info)
+        create_group_chats = GroupChat.objects.filter(gc_creator=team_member)
+        for cgc in create_group_chats:
+            chat_messages2 = cgc.gc_history.all().order_by('cm_create_time')
+            for message in chat_messages2:
+                message_content = message.cm_content
+                if search_info.lower() in message_content.lower():
+                    if message.cm_type == 'file':
+                        file_id2 = message.cm_file.file_id
+                    else:
+                        file_id2 = 0
+                    message_info = {
+                        "gc_id": cgc.gc_id,
+                        "cm_id": message.cm_id,
+                        "message_content": message_content,
+                        "message_type": message.cm_type,
+                        "message_sender_id": message.cm_from.user_id,
+                        "message_sender_name": message.cm_from.user_name,
+                        "create_time": message.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+                        "is_at": message.cm_isat,
+                        "is_at_all": message.cm_at_all,
+                        "file_id": file_id2,
+                        "array_data": [member.tm_user_id.user_id for member in message.cm_at.all()]
+                    }
+                    search_res.append(message_info)
+
+    return JsonResponse({'search_res': search_res})
