@@ -652,7 +652,7 @@ def show_directory_tree(request, user):
     project_id = data.get('project_id')
     project = Project.objects.get(project_id=project_id)
     items_info = []
-    for document in project.project_root_directory:
+    for document in project.project_root_directory.directory_document.all():
         document_info = {
             'id': document.document_id,
             'label': document.document_name,
@@ -662,7 +662,7 @@ def show_directory_tree(request, user):
 
     for directory in project.project_directory.all():
         children_info = []
-        for document in directory:
+        for document in directory.directory_document.all():
             document_info = {
                 'id': document.document_id,
                 'label': document.document_name,
