@@ -491,16 +491,7 @@ def copy_project(request, user):
         new_prototype.prototype_name = old_prototype.prototype_name
         new_prototype.prototype_project = new_prototype
         new_prototype.prototype_creator = old_prototype.prototype_creator
-        if old_prototype.prototype_file:
-            old_file_path = old_prototype.prototype_file.path
-            old_file_name, old_file_extension = os.path.splitext(os.path.basename(old_file_path))
-
-            # 假设 new_saved_document 是新的 SavedDocument 实例
-            new_file_id = new_prototype.pk  # 新文件的 ID
-            new_file_path = f'Prototype/{old_file_name}_{new_file_id}{old_file_extension}'
-
-            shutil.copy(old_file_path, new_file_path)
-            new_prototype.prototype_file.name = new_file_path
+        new_prototype.prototype_components = old_prototype.prototype_components
         new_prototype.prototype_recycle = old_prototype.prototype_recycle
 
         # 保存新的原型实例到数据库
