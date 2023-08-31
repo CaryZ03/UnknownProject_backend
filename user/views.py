@@ -418,3 +418,19 @@ def search_user_by_username(request):
         if user.user_visible:
             matching_users_info.append(user.to_json())
     return JsonResponse({'errno': 0, 'msg': '返回用户信息列表成功', 'user_info': matching_users_info})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def user_change_password(request, user):
+    data_json = json.loads(request.body)
+    password1 = data_json.get('password1')
+    password2 = data_json.get('password2')
+    if password1 != password2:
+        return JsonResponse({'errno': 1180, 'msg': "两次输入的密码不同"})
+    if not re.match('^(?=.*\\d)(?=.*[a-zA-Z]).{6,20}$', str(password1)):
+        return JsonResponse({'errno': 1181, 'msg': "密码不合法"})
+    user.user_password = password1
+    user.save()
+    return JsonResponse({'errno': 0, 'msg': '修改用户密码成功'})

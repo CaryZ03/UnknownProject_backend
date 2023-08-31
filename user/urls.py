@@ -21,4 +21,5 @@ urlpatterns = [
     path('check_token', check_token, name='check_token'),
     path('check_team_list', check_team_list, name='check_team_list'),
     path('search_user_by_username', search_user_by_username, name='search_user_by_username'),
+    path('user_change_password', user_change_password, name='user_change_password')
 ]
