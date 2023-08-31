@@ -54,7 +54,12 @@ def create_project(request, user):
     new_project.project_estimated_start_time = estimated_start_time
     new_directory = Directory.objects.create()
     new_directory.directory_project = new_project
+    new_directory.save()
     new_project.project_root_directory = new_directory
+    new_recycle = Directory.objects.create()
+    new_recycle.directory_project = new_project
+    new_recycle.save()
+    new_project.project_recycle_bin = new_recycle
     new_project.save()
     return JsonResponse({'errno': 0, 'msg': "项目创建成功"})
 
