@@ -296,7 +296,7 @@ def create_group_chat(request):
     gc_name = data.get('gc_name')
     team = Team.objects.get(team_id=team_id)
     team_member_creator = TeamMember.objects.get(tm_user_id=creator, tm_team_id=team)
-    new_group_chat = GroupChat.objects.create(gc_creator=team_member_creator, gc_name=gc_name, gc_team_id=team_id)
+    new_group_chat = GroupChat.objects.create(gc_creator=team_member_creator, gc_name=gc_name, gc_team=team)
     for user_id in users_id:
         joiner = User.objects.get(user_id=user_id)
         team_member_joiner = TeamMember.objects.get(tm_user_id=joiner, tm_team_id=team)
