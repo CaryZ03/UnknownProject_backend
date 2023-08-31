@@ -677,5 +677,5 @@ def show_directory_tree(request, user):
         }
         items_info.append(directory_info)
 
-    return JsonResponse({'errno': 0, 'items_info': items_info})
+    return JsonResponse({'errno': 0, 'items_info': items_info, 'root_id': project.project_root_directory.directory_id})
 
