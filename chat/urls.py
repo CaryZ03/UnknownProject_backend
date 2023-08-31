@@ -18,4 +18,6 @@ urlpatterns = [
     path('update_leave_message', update_leave_message, name='update_leave_message'),
     path('acquire_unread_message', acquire_unread_message, name='acquire_unread_message'),
     path('get_group_chat_members', get_group_chat_members, name='get_group_chat_members'),
+    path('search_private_chat_message', search_private_chat_message, name='search_private_chat_message'),
+    path('search_group_chat_message', search_group_chat_message, name='search_group_chat_message'),
 ]
