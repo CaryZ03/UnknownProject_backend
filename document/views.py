@@ -391,8 +391,8 @@ def search_prototype(request, user):
 def change_prototype(request, user):
     data = json.loads(request.body)
     prototype_id = data.get('prototype_id')
-    prototype_name = data.get('name')
-    prototype_recycle = data.get('recycle')
+    prototype_name = data.get('prototype_name')
+    prototype_recycle = data.get('prototype_recycle')
     if not Prototype.objects.filter(prototype_id=prototype_id).exists():
         return JsonResponse({'errno': 4160, 'msg': "该原型不存在"})
     prototype = Prototype.objects.get(prototype_id=prototype_id)
@@ -416,8 +416,8 @@ def change_prototype(request, user):
 def change_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
-    document_name = data.get('name')
-    document_recycle = data.get('recycle')
+    document_name = data.get('document_name')
+    document_recycle = data.get('document_recycle')
     if not Document.objects.filter(document_id=document_id).exists():
         return JsonResponse({'errno': 4170, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
