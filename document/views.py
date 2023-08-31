@@ -391,8 +391,8 @@ def search_prototype(request, user):
 def change_prototype(request, user):
     data = json.loads(request.body)
     prototype_id = data.get('prototype_id')
-    prototype_name = data.get('name')
-    prototype_recycle = data.get('recycle')
+    prototype_name = data.get('prototype_name')
+    prototype_recycle = data.get('prototype_recycle')
     if not Prototype.objects.filter(prototype_id=prototype_id).exists():
         return JsonResponse({'errno': 4160, 'msg': "该原型不存在"})
     prototype = Prototype.objects.get(prototype_id=prototype_id)
