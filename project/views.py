@@ -13,7 +13,7 @@ from django.views.decorators.http import require_http_methods
 from django.http.response import JsonResponse
 from datetime import timedelta
 
-from document.views import copy_document
+from document.views import copy_document, copy_directory
 from user.models import User, UserToken
 from team.models import Team, TeamMember, TeamApplicant
 from .models import Project, Requirement
@@ -507,9 +507,16 @@ def copy_project(request, user):
         new_prototype.save()
         new_project.project_prototype.add(new_prototype)
 
-    for old_document in old_project.project_document.all():
-        copy_document(new_project, old_document)
+    new_root = copy_directory(new_project, old_project.project_root_directory)
+    new_project.project_root_directory = new_root
+    new_recycle = copy_directory(new_project, old_project.project_recycle_bin)
+    new_project.project_recycle_bin = new_recycle
 
+    for old_directory in old_project.project_directory:
+        new_directory = copy_directory(new_project, old_directory)
+        new_project.project_directory.add(new_directory)
+
+    new_project.save()
     team.team_projects.add(new_project)
 
     return JsonResponse({'errno': 0, 'msg': "项目复制修改成功"})

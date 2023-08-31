@@ -46,3 +46,11 @@ class Notification(Model):
             "notification_message": self.notification_message.cm_id
         }
         return json.dumps(info, ensure_ascii=False)
+
+
+class LeaveHistory(Model):
+    user = ForeignKey('user.User', on_delete=CASCADE, null=True)
+    chat_id = IntegerField()
+    chat_type = CharField(max_length=20)
+    leave_time = DateTimeField(auto_now=True, null=True)
+
