@@ -12,4 +12,7 @@ urlpatterns = [
     path('store_private_message', store_private_message, name='store_private_message'),
     path('get_private_chat_history', get_private_chat_history, name='get_private_chat_history'),
     path('create_group_chat', create_group_chat, name='create_group_chat'),
+    path('acquire_group_chat', acquire_group_chat, name='acquire_group_chat'),
+    path('store_group_message', store_group_message, name='store_group_message'),
+    path('get_group_chat_history', get_group_chat_history, name='get_group_chat_history'),
 ]
