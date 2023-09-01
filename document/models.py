@@ -100,7 +100,6 @@ class Template(Model):
             "template_id": self.template_id,
             "template_name": self.template_name,
             "template_editable": self.template_editable,
-            "template_file": self.template_file,
             "template_type": self.template_type,
         }
         return json.dumps(info, ensure_ascii=False)

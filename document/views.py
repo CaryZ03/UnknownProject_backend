@@ -516,7 +516,7 @@ def change_document_recycle(request, user):
             return JsonResponse({'errno': 4193, 'msg': '文档已在回收站'})
         document.document_recycle = True
         directory.directory_document.remove(document)
-        project.project_recycle_bin.add(document)
+        project.project_recycle_directory.add(document)
     else:
         if not document.document_recycle:
             return JsonResponse({'errno': 4194, 'msg': '文档不在回收站'})
@@ -843,5 +843,5 @@ def show_template_list(request, user):
     t_info = []
     for template in template_list:
         t_info.append(template.to_json())
-    return JsonResponse({'errno': 0, 'msg': "创建模板成功", 'template_info': t_info})
+    return JsonResponse({'errno': 0, 'msg': "返回模板成功", 'template_info': t_info})
 
