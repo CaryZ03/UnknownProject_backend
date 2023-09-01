@@ -38,9 +38,9 @@ class Document(Model):
             "document_allow_edit": self.document_allow_edit,
             "document_allow_check": self.document_allow_check,
             "size": 1, # self.document_saves.last().size(),
-            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S") if self.document_saves else None,
+            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S") if self.document_saves and self.document_saves.last() else None,
             "editable": self.document_editable,
-            "save_id": self.document_saves.last().sd_id if self.document_saves else None
+            "save_id": self.document_saves.last().sd_id if self.document_saves and self.document_saves.last() else None
         }
         return json.dumps(info, ensure_ascii=False)
 
@@ -93,4 +93,14 @@ class Template(Model):
     template_name = CharField(max_length=100)
     template_editable = BooleanField(default=False)
     template_file = JSONField(default=None, null=True)
+    template_type = CharField(max_length=30, null=True)
 
+    def to_json(self):
+        info = {
+            "template_id": self.template_id,
+            "template_name": self.template_name,
+            "template_editable": self.template_editable,
+            "template_file": self.template_file,
+            "template_type": self.template_type,
+        }
+        return json.dumps(info, ensure_ascii=False)

@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from project.models import Project
 from team.models import *
 from message.models import *
-from .models import File, Document, SavedDocument, Prototype, Directory
+from .models import File, Document, SavedDocument, Prototype, Directory, Template
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -764,3 +764,27 @@ def change_directory_recycle(request, user):
         project.project_directory.add(directory)
     directory.save()
     return JsonResponse({'errno': 0, 'msg': '修改状态成功'})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_template(request, user):
+    data = json.loads(request.body)
+    template_name = data.get('template_name')
+    template_file = data.get('template_file')
+    template_type = data.get('template_type')
+    template = Template.objects.create(template_name=template_name, template_file=template_file, template_type=template_type)
+    return JsonResponse({'errno': 0, 'msg': "创建模板成功", 'template_id': template.template_id})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def show_template_list(request, user):
+    data = json.loads(request.body)
+    template_type = data.get('template_type')
+    template_list = Template.objects.filter(template_type=template_type).all()
+    t_info = []
+    for template in template_list:
+        t_info.append(template.to_json())
+    return JsonResponse({'errno': 0, 'msg': "创建模板成功", 'template_info': t_info})
+
