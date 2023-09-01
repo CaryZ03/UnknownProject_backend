@@ -212,7 +212,11 @@ def show_save(request, user):
     saves = document.document_saves.all()
     s_info = []
     for s in saves:
-        s_info.append(s.to_json())
+        s_info.append({
+            "sd_id": s.sd_id,
+            "sd_file": s.sd_file,
+            "sd_saved_time": s.sd_saved_time.strftime("%Y-%m-%d %H:%M:%S")
+        })
     return JsonResponse({'errno': 0, 'msg': '返回副本成功', 's_info': s_info})
 
 
