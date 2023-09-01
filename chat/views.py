@@ -602,4 +602,15 @@ def group_delete_member(request):
         team_member = TeamMember.objects.get(tm_user_id=user, tm_team_id=team)
         gc.gc_members.remove(team_member)
     gc.save()
-    return JsonResponse({'msg': "删除成功"})
+    return JsonResponse({'msg': "成员删除成功"})
+
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def delete_group(request):
+    data = json.loads(request.body)
+    gc_id = data.get('gc_id')
+    gc = GroupChat.objects.get(gc_id=gc_id)
+    gc.delete()
+    return JsonResponse({'msg': "群聊删除成功"})
+
