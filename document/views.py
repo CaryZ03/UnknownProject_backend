@@ -703,30 +703,32 @@ def show_directory_tree(request, user):
     project_id = data.get('project_id')
     project = Project.objects.get(project_id=project_id)
     items_info = []
-    for document in project.project_root_directory.directory_document.all():
-        document_info = {
-            'id': document.document_id,
-            'label': document.document_name,
-            'isFolder': False,
-        }
-        items_info.append(document_info)
-
-    for directory in project.project_directory.all():
-        children_info = []
-        for document in directory.directory_document.all():
+    if project.project_root_directory is not None:
+        for document in project.project_root_directory.directory_document.all():
             document_info = {
                 'id': document.document_id,
                 'label': document.document_name,
-                'isFolder': False
+                'isFolder': False,
             }
-            children_info.append(document_info)
-        directory_info = {
-            'id': directory.directory_id,
-            'label': directory.directory_name,
-            'isFolder': True,
-            'children': children_info
-        }
-        items_info.append(directory_info)
+            items_info.append(document_info)
+    if project.project_directory.exists():
+        for directory in project.project_directory.all():
+            children_info = []
+            if directory.directory_document.exists():
+                for document in directory.directory_document.all():
+                    document_info = {
+                        'id': document.document_id,
+                        'label': document.document_name,
+                        'isFolder': False
+                    }
+                    children_info.append(document_info)
+            directory_info = {
+                'id': directory.directory_id,
+                'label': directory.directory_name,
+                'isFolder': True,
+                'children': children_info
+            }
+            items_info.append(directory_info)
 
     return JsonResponse({'errno': 0, 'items_info': items_info, 'root_id': project.project_root_directory.directory_id})
 
@@ -739,30 +741,34 @@ def show_recycle_tree(request, user):
     project_id = data.get('project_id')
     project = Project.objects.get(project_id=project_id)
     items_info = []
-    for document in project.project_recycle_bin.directory_document.all():
-        document_info = {
-            'id': document.document_id,
-            'label': document.document_name,
-            'isFolder': False,
-        }
-        items_info.append(document_info)
 
-    for directory in project.project_recycle_directory.all():
-        children_info = []
-        for document in directory.directory_document.all():
+    if project.project_recycle_bin is not None:
+        for document in project.project_recycle_bin.directory_document.all():
             document_info = {
                 'id': document.document_id,
                 'label': document.document_name,
-                'isFolder': False
+                'isFolder': False,
             }
-            children_info.append(document_info)
-        directory_info = {
-            'id': directory.directory_id,
-            'label': directory.directory_name,
-            'isFolder': True,
-            'children': children_info
-        }
-        items_info.append(directory_info)
+            items_info.append(document_info)
+
+    if project.project_recycle_directory.exists():
+        for directory in project.project_recycle_directory.all():
+            children_info = []
+            if directory.directory_document.exists():
+                for document in directory.directory_document.all():
+                    document_info = {
+                        'id': document.document_id,
+                        'label': document.document_name,
+                        'isFolder': False
+                    }
+                    children_info.append(document_info)
+            directory_info = {
+                'id': directory.directory_id,
+                'label': directory.directory_name,
+                'isFolder': True,
+                'children': children_info
+            }
+            items_info.append(directory_info)
 
     return JsonResponse({'errno': 0, 'items_info': items_info, 'recycle_id': project.project_recycle_bin.directory_id})
 
