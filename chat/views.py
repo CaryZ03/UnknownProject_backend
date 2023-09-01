@@ -614,3 +614,30 @@ def delete_group(request):
     gc.delete()
     return JsonResponse({'msg': "群聊删除成功"})
 
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def acquire_message_block(request):
+    data = json.loads(request.body)
+    message = data.get('message')
+    str_array = message.split(",")
+    num_array = [int(x) for x in str_array]
+    cm_elements = num_array[1:]
+    block_info = []
+    for cm_id in cm_elements:
+        cm = ChatMessage.objects.get(cm_id=cm_id)
+        if cm.cm_type == 'file' or cm.cm_type == 'image':
+            file_id = cm.cm_file.file_id
+        else:
+            file_id = 0
+        message_info = {
+            "cm_id": cm.cm_id,
+            "message": cm.cm_content,
+            "user_id": cm.cm_from.user_id,
+            "user_name": cm.cm_from.user_name,
+            "cm_create_time": cm.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "message_type": cm.cm_type,
+            "file_id": file_id,
+        }
+        block_info.append(message_info)
+    return JsonResponse({'block_info': block_info})

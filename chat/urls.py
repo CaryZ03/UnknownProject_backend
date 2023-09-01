@@ -23,4 +23,5 @@ urlpatterns = [
     path('group_invite_member', group_invite_member, name='group_invite_member'),
     path('group_delete_member', group_delete_member, name='group_delete_member'),
     path('delete_group', delete_group, name='delete_group'),
+    path('acquire_message_block', acquire_message_block, name='acquire_message_block'),
 ]
