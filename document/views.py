@@ -127,7 +127,7 @@ def show_document_list(request, user):
     data = json.loads(request.body)
     directory_id = data.get('directory_id')
     if not Directory.objects.filter(directory_id=directory_id).exists():
-        return JsonResponse({'errno': 4040, 'msg': "该文件夹不存在"})
+        return JsonResponse({'errno': 4060, 'msg': "该文件夹不存在"})
     directory = Directory.objects.get(directory_id=directory_id)
     project = directory.directory_project
     team = project.project_team
@@ -234,7 +234,7 @@ def search_save(request, user):
         return JsonResponse({'errno': 4102, 'msg': "项目在回收站中，无法操作"})
     if document.document_recycle:
         return JsonResponse({'errno': 4103, 'msg': "文档在回收站中，无法操作"})
-    return JsonResponse({'errno': 0, 'msg': '退回存档成功', 'document_content': recent_save.sd_file})
+    return JsonResponse({'errno': 0, 'msg': '查找文档副本成功', 'document_content': recent_save.sd_file})
 
 
 @csrf_exempt
@@ -584,14 +584,14 @@ def delete_directory(request, user):
     data = json.loads(request.body)
     directory_id = data.get('directory_id')
     if not Directory.objects.filter(directory_id=directory_id).exists():
-        return JsonResponse({'errno': 4040, 'msg': "该文件夹不存在"})
+        return JsonResponse({'errno': 4220, 'msg': "该文件夹不存在"})
     directory = Directory.objects.get(directory_id=directory_id)
     project = directory.directory_project
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4041, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 4221, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
-        return JsonResponse({'errno': 4042, 'msg': "项目在回收站中，无法操作"})
+        return JsonResponse({'errno': 4222, 'msg': "项目在回收站中，无法操作"})
     project.project_directory.remove(directory)
     directory.delete()
     return JsonResponse({'errno': 0, 'msg': '文件夹删除成功'})
@@ -604,13 +604,13 @@ def show_directory(request, user):
     data = json.loads(request.body)
     project_id = data.get('project_id')
     if not Project.objects.filter(project_id=project_id).exists():
-        return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
+        return JsonResponse({'errno': 4230, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
     team = project.project_team
     if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
-        return JsonResponse({'errno': 4111, 'msg': "当前用户不在该团队内"})
+        return JsonResponse({'errno': 4231, 'msg': "当前用户不在该团队内"})
     if project.project_recycle:
-        return JsonResponse({'errno': 4112, 'msg': "项目在回收站中，无法操作"})
+        return JsonResponse({'errno': 4232, 'msg': "项目在回收站中，无法操作"})
     directories = project.project_directory.all()
     d_info = []
     for directory in directories:
@@ -625,10 +625,20 @@ def save_prototype_components(request, user):
     data = json.loads(request.body)
     prototype_id = data.get('prototype_id')
     prototype_components = data.get('prototype_components')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 4240, 'msg': "该原型不存在"})
     prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4241, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4242, 'msg': "项目在回收站中，无法操作"})
+    if prototype.prototype_recycle:
+        return JsonResponse({'errno': 4243, 'msg': "原型在回收站中，无法操作"})
     prototype.prototype_components = prototype_components
     prototype.save()
-    return JsonResponse({'errno': 0, 'msg': '参数保存成功'})
+    return JsonResponse({'errno': 0, 'msg': '原型修改成功'})
 
 
 @csrf_exempt
@@ -637,9 +647,19 @@ def save_prototype_components(request, user):
 def get_prototype_components(request, user):
     data = json.loads(request.body)
     prototype_id = data.get('prototype_id')
+    if not Prototype.objects.filter(prototype_id=prototype_id).exists():
+        return JsonResponse({'errno': 4250, 'msg': "该原型不存在"})
     prototype = Prototype.objects.get(prototype_id=prototype_id)
+    project = prototype.prototype_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4251, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4252, 'msg': "项目在回收站中，无法操作"})
+    if prototype.prototype_recycle:
+        return JsonResponse({'errno': 4253, 'msg': "原型在回收站中，无法操作"})
     prototype_components = prototype.prototype_components
-    return JsonResponse({'errno': 0, 'msg': '参数返回成功', 'components': prototype_components})
+    return JsonResponse({'errno': 0, 'msg': '返回原型成功', 'components': prototype_components})
 
 
 @csrf_exempt
@@ -649,12 +669,29 @@ def move_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
     directory_id = data.get('directory_id')
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 4260, 'msg': "该文档类不存在"})
     document = Document.objects.get(document_id=document_id)
     old_directory = document.document_directory
-    old_directory.directory_document.remove(document)
+    project = old_directory.directory_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4261, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4262, 'msg': "项目在回收站中，无法操作"})
+    if document.document_recycle:
+        return JsonResponse({'errno': 4263, 'msg': "文档在回收站中，无法操作"})
+    if not Directory.objects.filter(directory_id=directory_id).exists():
+        return JsonResponse({'errno': 4264, 'msg': "该文件夹不存在"})
     new_directory = Directory.objects.get(directory_id=directory_id)
+    if new_directory.directory_recycle:
+        return JsonResponse({'errno': 4265, 'msg': "文件夹在回收站中，无法操作"})
+    if new_directory.directory_project != project:
+        return JsonResponse({'errno': 4266, 'msg': "文件与文档不在同一项目中"})
+    old_directory.directory_document.remove(document)
     new_directory.directory_document.add(document)
     document.document_directory = new_directory
+    document.save()
     return JsonResponse({'errno': 0, 'msg': '文件移动成功'})
 
 
