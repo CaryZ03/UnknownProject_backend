@@ -636,7 +636,7 @@ def acquire_message_block(request):
             "cm_id": cm.cm_id,
             "message": cm.cm_content,
             "user_id": cm.cm_from.user_id,
-            "user_name": cm.cm_from.user_name, 
+            "user_name": cm.cm_from.user_name,
             "cm_create_time": cm.cm_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "message_type": cm.cm_type,
             "file_id": file_id,
