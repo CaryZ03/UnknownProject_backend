@@ -686,8 +686,8 @@ def show_directory_tree(request, user):
 def search_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
-    if not Directory.objects.filter(directory_id=directory_id).exists():
-        return JsonResponse({'errno': 4040, 'msg': "该文件类不存在"})
+    if not Document.objects.filter(document_id=document_id).exists():
+        return JsonResponse({'errno': 4040, 'msg': "该文件不存在"})
     document = Document.objects.get(document_id=document_id)
     project = document.document_directory.directory_project
     team = project.project_team
