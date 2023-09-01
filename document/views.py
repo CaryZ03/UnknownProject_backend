@@ -91,6 +91,7 @@ def create_document(request, user):
             return JsonResponse({'errno': 4043, 'msg': "模板不存在"})
         template = Template.objects.get(template_id=template_id)
         save.sd_file = template.template_file
+    save.save()
     document.document_saves.add(save)
     document.save()
     directory.directory_document.add(document)
@@ -617,7 +618,7 @@ def show_directory(request, user):
     d_info = []
     for directory in directories:
         d_info.append(directory.to_json())
-    return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_root_directory.directory_id})
+    return JsonResponse({'errno': 0, 'd_info': d_info, 'root_id': project.project_root_directory.directory_id, 'recycle_id': project.project_recycle_bin.directory_id})
 
 
 @csrf_exempt
@@ -815,19 +816,25 @@ def change_directory_recycle(request, user):
         directory.directory_recycle = True
         project.project_directory.remove(directory)
         project.project_recycle_directory.add(directory)
+        for document in directory.directory_document.all():
+            document.document_recycle = True
+            document.save()
     else:
         if not directory.directory_recycle:
             return JsonResponse({'errno': 4194, 'msg': '文档不在回收站'})
         directory.directory_recycle = False
         project.project_recycle_directory.remove(directory)
         project.project_directory.add(directory)
+        for document in directory.directory_document.all():
+            document.document_recycle = False
+            document.save()
     directory.save()
     return JsonResponse({'errno': 0, 'msg': '修改状态成功'})
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def create_template(request, user):
+def create_template(request):
     data = json.loads(request.body)
     template_name = data.get('template_name')
     template_file = data.get('template_file')
@@ -838,7 +845,7 @@ def create_template(request, user):
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def show_template_list(request, user):
+def show_template_list(request):
     data = json.loads(request.body)
     template_type = data.get('template_type')
     template_list = Template.objects.filter(template_type=template_type).all()

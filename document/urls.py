@@ -32,5 +32,6 @@ urlpatterns = [
     path('show_recycle_tree', show_recycle_tree, name='show_recycle_tree'),
     path('search_document', search_document, name='search_document'),
     path('change_directory_recycle', change_directory_recycle, name='change_directory_recycle'),
+    path('create_template', create_template, name='create_template'),
     path('show_template_list', show_template_list, name='show_template_list'),
 ]
