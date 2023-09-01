@@ -716,6 +716,7 @@ def show_directory_tree(request, user):
                 'id': document.document_id,
                 'label': document.document_name,
                 'isFolder': False,
+                'parent_id': project.project_root_directory.directory_id
             }
             items_info.append(document_info)
     if project.project_directory.exists():
@@ -726,13 +727,15 @@ def show_directory_tree(request, user):
                     document_info = {
                         'id': document.document_id,
                         'label': document.document_name,
-                        'isFolder': False
+                        'isFolder': False,
+                        'parent_id': directory.directory_id
                     }
                     children_info.append(document_info)
             directory_info = {
                 'id': directory.directory_id,
                 'label': directory.directory_name,
                 'isFolder': True,
+                'parent_id': project.project_root_directory.directory_id,
                 'children': children_info
             }
             items_info.append(directory_info)
@@ -755,6 +758,7 @@ def show_recycle_tree(request, user):
                 'id': document.document_id,
                 'label': document.document_name,
                 'isFolder': False,
+                'parent_id': project.project_recycle_bin.directory_id
             }
             items_info.append(document_info)
 
@@ -766,13 +770,15 @@ def show_recycle_tree(request, user):
                     document_info = {
                         'id': document.document_id,
                         'label': document.document_name,
-                        'isFolder': False
+                        'isFolder': False,
+                        'parent_id': directory.directory_id
                     }
                     children_info.append(document_info)
             directory_info = {
                 'id': directory.directory_id,
                 'label': directory.directory_name,
                 'isFolder': True,
+                'parent_id': project.project_recycle_bin.directory_id,
                 'children': children_info
             }
             items_info.append(directory_info)
