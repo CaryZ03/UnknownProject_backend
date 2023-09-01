@@ -489,7 +489,7 @@ def copy_project(request, user):
         new_prototype = Prototype()
         # 假设 old_prototype 和 new_prototype 是已经存在的实例
         new_prototype.prototype_name = old_prototype.prototype_name
-        new_prototype.prototype_project = new_prototype
+        new_prototype.prototype_project = new_project
         new_prototype.prototype_creator = old_prototype.prototype_creator
         new_prototype.prototype_components = old_prototype.prototype_components
         new_prototype.prototype_recycle = old_prototype.prototype_recycle
@@ -508,6 +508,10 @@ def copy_project(request, user):
     for old_directory in old_project.project_directory.all():
         new_directory = copy_directory(new_project, old_directory)
         new_project.project_directory.add(new_directory)
+
+    for old_directory in old_project.project_recycle_directory.all():
+        new_directory = copy_directory(new_project, old_directory)
+        new_project.project_recycle_directory.add(new_directory)
 
     new_project.save()
     team.team_projects.add(new_project)

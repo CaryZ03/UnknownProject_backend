@@ -362,7 +362,7 @@ def copy_document(new_directory, old_document):
 
     new_document.save()
     new_directory.directory_document.add(new_document)
-    for old_saved_document in old_document.document_saves:
+    for old_saved_document in old_document.document_saves.all():
         new_saved_document = SavedDocument()
         new_saved_document.sd_saved_time = old_saved_document.sd_saved_time
         new_saved_document.sd_document = new_document
@@ -388,7 +388,7 @@ def copy_directory(new_project, old_directory):
 
     new_directory.save()
 
-    for old_document in old_directory.directory_document:
+    for old_document in old_directory.directory_document.all():
         copy_document(new_directory, old_document)
 
     return new_directory
