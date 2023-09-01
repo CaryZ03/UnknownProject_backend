@@ -322,14 +322,16 @@ def acquire_group_chat(request):
         for jgc in join_group_chats:
             jgc_info = {
                 'gc_id': jgc.gc_id,
-                'gc_name': jgc.gc_name
+                'gc_name': jgc.gc_name,
+                'team_id': jgc.gc_team.team_id
             }
             group_chats_info_joiner.append(jgc_info)
         create_group_chats = GroupChat.objects.filter(gc_creator=team_member)
         for cgc in create_group_chats:
             cgc_info = {
                 'gc_id': cgc.gc_id,
-                'gc_name': cgc.gc_name
+                'gc_name': cgc.gc_name,
+                'team_id': cgc.gc_team.team_id
             }
             group_chats_info_creator.append(cgc_info)
 
