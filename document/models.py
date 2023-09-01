@@ -14,7 +14,7 @@ class SavedDocument(Model):
     def to_json(self):
         info = {
             "sd_id": self.sd_id,
-            "sd_file": self.sd_file.url,
+            "sd_file": self.sd_file,
             "sd_saved_time": self.sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
         }
         return json.dumps(info, ensure_ascii=False)
