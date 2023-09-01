@@ -74,6 +74,7 @@ def create_document(request, user):
     data_json = json.loads(request.body)
     document_name = data_json.get('document_name')
     directory_id = data_json.get('directory_id')
+    template_id = data_json.get('template_id')
     if not Directory.objects.filter(directory_id=directory_id).exists():
         return JsonResponse({'errno': 4040, 'msg': "该文件夹不存在"})
     directory = Directory.objects.get(directory_id=directory_id)
@@ -84,6 +85,14 @@ def create_document(request, user):
     if project.project_recycle:
         return JsonResponse({'errno': 4042, 'msg': "项目在回收站中，无法操作"})
     document = Document.objects.create(document_name=document_name, document_directory=directory)
+    save = SavedDocument.objects.create(sd_document=document)
+    if template_id:
+        if not Template.objects.filter(template_id=template_id).exists():
+            return JsonResponse({'errno': 4043, 'msg': "模板不存在"})
+        template = Template.objects.get(template_id=template_id)
+        save.sd_file = template.template_file
+    document.document_saves.add(save)
+    document.save()
     directory.directory_document.add(document)
     return JsonResponse({'errno': 0, 'msg': '创建文档成功', 'document_id': document.document_id})
 
@@ -235,6 +244,7 @@ def create_prototype(request, user):
     data_json = json.loads(request.body)
     prototype_name = data_json.get('prototype_name')
     project_id = data_json.get('project_id')
+    template_id = data_json.get('template_id')
     if not Project.objects.filter(project_id=project_id).exists():
         return JsonResponse({'errno': 4110, 'msg': "该项目不存在"})
     project = Project.objects.get(project_id=project_id)
@@ -244,7 +254,11 @@ def create_prototype(request, user):
     if project.project_recycle:
         return JsonResponse({'errno': 4112, 'msg': "项目在回收站中，无法操作"})
     team_member = TeamMember.objects.get(tm_team_id=team, tm_user_id=user)
-    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project, prototype_creator=team_member)
+    prototype = Prototype.objects.create(prototype_name=prototype_name, prototype_project=project,
+                                         prototype_creator=team_member)
+    if template_id:
+        template = Template.objects.get(template_id=template_id)
+        prototype.prototype_components = template.template_file
     prototype.prototype_change_time = prototype.prototype_create_time
     prototype.save()
     project.project_prototype.add(prototype)

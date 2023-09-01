@@ -38,7 +38,7 @@ class Document(Model):
             "document_allow_edit": self.document_allow_edit,
             "document_allow_check": self.document_allow_check,
             "size": 1, # self.document_saves.last().size(),
-            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S") if self.document_saves and self.document_saves.last() else None,
+            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S") if self.document_saves and self.document_saves.last() else self.document_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "editable": self.document_editable,
             "save_id": self.document_saves.last().sd_id if self.document_saves and self.document_saves.last() else None
         }
