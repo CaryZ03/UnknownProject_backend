@@ -683,6 +683,42 @@ def show_directory_tree(request, user):
 @csrf_exempt
 @login_required
 @require_http_methods(['POST'])
+def show_recycle_tree(request, user):
+    data = json.loads(request.body)
+    project_id = data.get('project_id')
+    project = Project.objects.get(project_id=project_id)
+    items_info = []
+    for document in project.project_recycle_bin.directory_document.all():
+        document_info = {
+            'id': document.document_id,
+            'label': document.document_name,
+            'isFolder': False,
+        }
+        items_info.append(document_info)
+
+    for directory in project.project_recycle_directory.all():
+        children_info = []
+        for document in directory.directory_document.all():
+            document_info = {
+                'id': document.document_id,
+                'label': document.document_name,
+                'isFolder': False
+            }
+            children_info.append(document_info)
+        directory_info = {
+            'id': directory.directory_id,
+            'label': directory.directory_name,
+            'isFolder': True,
+            'children': children_info
+        }
+        items_info.append(directory_info)
+
+    return JsonResponse({'errno': 0, 'items_info': items_info, 'recycle_id': project.project_recycle_bin.directory_id})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
 def search_document(request, user):
     data = json.loads(request.body)
     document_id = data.get('document_id')
@@ -696,3 +732,35 @@ def search_document(request, user):
     if project.project_recycle:
         return JsonResponse({'errno': 4062, 'msg': "项目在回收站中，无法操作"})
     return JsonResponse({'errno': 0, 'msg': "文档查询成功", 'document_info': document.to_json()})
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(['POST'])
+def change_directory_recycle(request, user):
+    data = json.loads(request.body)
+    directory_id = data.get('directory_id')
+    recycle = data.get('recycle')
+    if not Directory.objects.filter(directory_id=directory_id).exists():
+        return JsonResponse({'errno': 4190, 'msg': "该文档类不存在"})
+    directory = Directory.objects.get(directory_id=directory_id)
+    project = directory.directory_project
+    team = project.project_team
+    if not TeamMember.objects.filter(tm_team_id=team, tm_user_id=user).exists():
+        return JsonResponse({'errno': 4191, 'msg': "当前用户不在该团队内"})
+    if project.project_recycle:
+        return JsonResponse({'errno': 4192, 'msg': "项目在回收站中，无法操作"})
+    if recycle == "True":
+        if directory.directory_recycle:
+            return JsonResponse({'errno': 4193, 'msg': '文档已在回收站'})
+        directory.directory_recycle = True
+        project.project_directory.remove(directory)
+        project.project_recycle_directory.add(directory)
+    else:
+        if not directory.directory_recycle:
+            return JsonResponse({'errno': 4194, 'msg': '文档不在回收站'})
+        directory.directory_recycle = False
+        project.project_recycle_directory.remove(directory)
+        project.project_directory.add(directory)
+    directory.save()
+    return JsonResponse({'errno': 0, 'msg': '修改状态成功'})

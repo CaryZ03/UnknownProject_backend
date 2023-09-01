@@ -38,9 +38,9 @@ class Document(Model):
             "document_allow_edit": self.document_allow_edit,
             "document_allow_check": self.document_allow_check,
             "size": 1, # self.document_saves.last().size(),
-            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "lastChangeTime": self.document_saves.last().sd_saved_time.strftime("%Y-%m-%d %H:%M:%S") if self.document_saves else None,
             "editable": self.document_editable,
-            "save_id": self.document_saves.last().sd_id
+            "save_id": self.document_saves.last().sd_id if self.document_saves else None
         }
         return json.dumps(info, ensure_ascii=False)
 
@@ -50,6 +50,7 @@ class Directory(Model):
     directory_name = CharField(max_length=100)
     directory_project = ForeignKey('project.project', on_delete=CASCADE, null=True)
     directory_document = ManyToManyField(Document)
+    directory_recycle = BooleanField(default=False)
 
     def to_json(self):
         info = {

@@ -30,7 +30,7 @@ class Project(Model):
     project_root_directory = ForeignKey('document.Directory', on_delete=SET_NULL, null=True, related_name='root_directory')
     project_directory = ManyToManyField('document.Directory', related_name='normal_directory')
     project_recycle_bin = ForeignKey('document.Directory', on_delete=SET_NULL, null=True, related_name='recycle_directory')
-
+    project_recycle_directory = ManyToManyField('document.Directory', related_name='recycled_directory')
     def to_json(self):
         info = {
             "project_id": self.project_id,
@@ -46,9 +46,9 @@ class Project(Model):
             if self.project_start_time else None,
             "project_end_time": self.project_end_time.strftime("%Y-%m-%d %H:%M:%S")
             if self.project_end_time else None,
-            "project_team": self.project_team.team_id,
+            "project_team_id": self.project_team.team_id,
             "editable": self.project_editable,
-            "project_team": self.project_team.team_name,
+            "project_team_name": self.project_team.team_name,
         }
         return json.dumps(info, ensure_ascii=False)
 

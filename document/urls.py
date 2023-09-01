@@ -29,5 +29,7 @@ urlpatterns = [
     path('show_directory', show_directory, name='show_directory'),
     path('move_document', move_document, name='move_document'),
     path('show_directory_tree', show_directory_tree, name='show_directory_tree'),
+    path('show_recycle_tree', show_recycle_tree, name='show_recycle_tree'),
     path('search_document', search_document, name='search_document'),
+    path('change_directory_recycle', change_directory_recycle, name='change_directory_recycle'),
 ]
