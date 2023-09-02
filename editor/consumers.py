@@ -32,6 +32,7 @@ class DocumentConsumer(AsyncWebsocketConsumer):
         y_canvas = text_data_json.get('y_canvas', 0)
         x_point = text_data_json.get('x_point', [])
         y_point = text_data_json.get('y_point', [])
+        p_vis = text_data_json.get('p_vis', [])
         new_join_info = text_data_json.get('new_join_info', "")
         print(message)
         await self.channel_layer.group_send(
@@ -47,6 +48,7 @@ class DocumentConsumer(AsyncWebsocketConsumer):
                 'y_canvas': y_canvas,
                 'x_point': x_point,
                 'y_point': y_point,
+                'p_vis': p_vis,
                 'new_join_info': new_join_info
             }
         )
@@ -61,6 +63,7 @@ class DocumentConsumer(AsyncWebsocketConsumer):
         y_canvas = event['y_canvas']
         x_point = event['x_point']
         y_point = event['y_point']
+        p_vis = event['p_vis']
         new_join_info = event['new_join_info']
         print(message)
         await self.send(text_data=json.dumps({
@@ -73,5 +76,6 @@ class DocumentConsumer(AsyncWebsocketConsumer):
             'y_canvas': y_canvas,
             'x_point': x_point,
             'y_point': y_point,
+            'p_vis': p_vis,
             'new_join_info': new_join_info
         }))
