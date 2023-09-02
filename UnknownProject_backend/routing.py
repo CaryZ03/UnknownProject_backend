@@ -6,6 +6,7 @@ from chat import routing as chatroom_routing
 from consumers.AvatarConsumer import UserAvatarConsumer
 from consumers.UserNotificationConsumer import UserNotificationConsumer
 from editor import routing as editor_routing
+from red import routing as red_routing
 
 application = ProtocolTypeRouter({
     "websocket": URLRouter(
@@ -14,6 +15,7 @@ application = ProtocolTypeRouter({
             path("ws/upload/avatar/user/", UserAvatarConsumer),
             path("ws/notification/receiver/<int:user_id>/", UserNotificationConsumer),
         ] + chatroom_routing.websocket_urlpatterns
+        + red_routing.websocket_urlpatterns
         + editor_routing.websocket_urlpatterns,
 
     ),
