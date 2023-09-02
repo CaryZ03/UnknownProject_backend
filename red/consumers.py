@@ -23,59 +23,19 @@ class RedConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json.get('message', "")
-        x_off = text_data_json.get('x_off', [])
-        y_off = text_data_json.get('y_off', [])
-        x_scale = text_data_json.get('x_scale', [])
-        y_scale = text_data_json.get('y_scale', [])
-        x_canvas = text_data_json.get('x_canvas', 0)
-        y_canvas = text_data_json.get('y_canvas', 0)
-        x_point = text_data_json.get('x_point', [])
-        y_point = text_data_json.get('y_point', [])
-        p_vis = text_data_json.get('p_vis', [])
-        new_join_info = text_data_json.get('new_join_info', "")
-        print(message)
+        room_id = text_data_json.get('room_id')
+        print(room_id)
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'edit_message',
-                'message': message,
-                'x_off': x_off,
-                'y_off': y_off,
-                'x_scale': x_scale,
-                'y_scale': y_scale,
-                'x_canvas': x_canvas,
-                'y_canvas': y_canvas,
-                'x_point': x_point,
-                'y_point': y_point,
-                'p_vis': p_vis,
-                'new_join_info': new_join_info
+                'room_id': room_id
             }
         )
 
     async def edit_message(self, event):
-        message = event['message']
-        x_off = event['x_off']
-        y_off = event['y_off']
-        x_scale = event['x_scale']
-        y_scale = event['y_scale']
-        x_canvas = event['x_canvas']
-        y_canvas = event['y_canvas']
-        x_point = event['x_point']
-        y_point = event['y_point']
-        p_vis = event['p_vis']
-        new_join_info = event['new_join_info']
-        print(message)
+        room_id = event['room_id']
+        print(room_id)
         await self.send(text_data=json.dumps({
-            'message': message,
-            'x_off': x_off,
-            'y_off': y_off,
-            'x_scale': x_scale,
-            'y_scale': y_scale,
-            'x_canvas': x_canvas,
-            'y_canvas': y_canvas,
-            'x_point': x_point,
-            'y_point': y_point,
-            'p_vis': p_vis,
-            'new_join_info': new_join_info
+            'room_id': room_id
         }))
