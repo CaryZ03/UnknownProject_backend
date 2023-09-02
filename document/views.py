@@ -852,6 +852,12 @@ def show_template_list(request):
     template_list = Template.objects.filter(template_type=template_type).all()
     t_info = []
     for template in template_list:
-        t_info.append(template.to_json())
+        t_info.append({
+            "template_id": template.template_id,
+            "template_name": template.template_name,
+            "template_editable": template.template_editable,
+            "template_type": template.template_type,
+            "template_file": template.template_file
+        })
     return JsonResponse({'errno': 0, 'msg': "返回模板成功", 'template_info': t_info})
 
