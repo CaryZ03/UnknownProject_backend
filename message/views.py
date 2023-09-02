@@ -76,7 +76,9 @@ def group_send_notification_to_user(request):
     creator_id = notification.get('creator_id')
     creator = User.objects.get(user_id=creator_id)
     cm_id = notification.get('cm_id')
-    chat_message = ChatMessage.objects.get(cm_id=cm_id)
+    chat_message = None
+    if cm_id:
+        chat_message = ChatMessage.objects.get(cm_id=cm_id)
     type = notification.get('type')
     receiver_list = data_json.get('receiver_list')
     for user_id in receiver_list:

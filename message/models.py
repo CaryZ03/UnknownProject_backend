@@ -28,7 +28,8 @@ class Notification(Model):
     notification_type_choices = (
         ('at', "@信息"),
         ('application', "申请信息"),
-        ('system', "系统信息")
+        ('system', "系统信息"),
+        ('document', "文档@")
     )
     notification_type = CharField(max_length=20, choices=notification_type_choices, default='system')
     notification_checked = BooleanField(default=False)
@@ -43,7 +44,7 @@ class Notification(Model):
             "notification_creator": self.notification_creator.user_name,
             "notification_receiver": self.notification_receiver.user_id,
             "notification_checked": self.notification_checked,
-            "notification_message": self.notification_message.cm_id
+            "notification_message": self.notification_message.cm_id if self.notification_message else None,
         }
         return json.dumps(info, ensure_ascii=False)
 
