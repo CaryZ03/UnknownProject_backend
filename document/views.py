@@ -635,6 +635,7 @@ def save_prototype_components(request, user):
     if prototype.prototype_recycle:
         return JsonResponse({'errno': 4243, 'msg': "原型在回收站中，无法操作"})
     prototype.prototype_components = prototype_components
+    prototype.prototype_change_time = now()
     prototype.save()
     return JsonResponse({'errno': 0, 'msg': '原型修改成功'})
 
