@@ -23,13 +23,16 @@ class DocumentConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-        x_off = text_data_json['x_off']
-        y_off = text_data_json['y_off']
-        x_scale = text_data_json['x_scale']
-        y_scale = text_data_json['y_scale']
-        x_canvas = text_data_json['x_canvas']
-        y_canvas = text_data_json['y_canvas']
+        message = text_data_json.get('message', "")
+        x_off = text_data_json.get('x_off', [])
+        y_off = text_data_json.get('y_off', [])
+        x_scale = text_data_json.get('x_scale', [])
+        y_scale = text_data_json.get('y_scale', [])
+        x_canvas = text_data_json.get('x_canvas', 0)
+        y_canvas = text_data_json.get('y_canvas', 0)
+        x_point = text_data_json.get('x_point', [])
+        y_point = text_data_json.get('y_point', [])
+        new_join_info = text_data_json.get('new_join_info', "")
         print(message)
         await self.channel_layer.group_send(
             self.room_group_name,
@@ -41,7 +44,10 @@ class DocumentConsumer(AsyncWebsocketConsumer):
                 'x_scale': x_scale,
                 'y_scale': y_scale,
                 'x_canvas': x_canvas,
-                'y_canvas': y_canvas
+                'y_canvas': y_canvas,
+                'x_point': x_point,
+                'y_point': y_point,
+                'new_join_info': new_join_info
             }
         )
 
@@ -53,6 +59,9 @@ class DocumentConsumer(AsyncWebsocketConsumer):
         y_scale = event['y_scale']
         x_canvas = event['x_canvas']
         y_canvas = event['y_canvas']
+        x_point = event['x_point']
+        y_point = event['y_point']
+        new_join_info = event['new_join_info']
         print(message)
         await self.send(text_data=json.dumps({
             'message': message,
@@ -61,5 +70,8 @@ class DocumentConsumer(AsyncWebsocketConsumer):
             'x_scale': x_scale,
             'y_scale': y_scale,
             'x_canvas': x_canvas,
-            'y_canvas': y_canvas
+            'y_canvas': y_canvas,
+            'x_point': x_point,
+            'y_point': y_point,
+            'new_join_info': new_join_info
         }))
