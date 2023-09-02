@@ -110,6 +110,26 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'unknown_project_show',
+#         'USER': 'question_planet_admin',
+#         'PASSWORD': '123456',
+#         'HOST': '182.92.102.246',
+#         'PORT': '3306',
+#         "ATOMIC_REQUESTS": True,
+#         "POOL": {
+#             "mincached": 5,
+#             "maxcached": 50,
+#             "blocking": True
+#         },
+#         'OPTIONS': {
+#             'charset': 'utf8',  # 使用 utf8mb4 编码
+#         },
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

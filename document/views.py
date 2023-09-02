@@ -366,16 +366,7 @@ def copy_document(new_directory, old_document):
         new_saved_document = SavedDocument()
         new_saved_document.sd_saved_time = old_saved_document.sd_saved_time
         new_saved_document.sd_document = new_document
-        if old_saved_document.sd_file:
-            old_file_path = old_saved_document.sd_file.path
-            old_file_name, old_file_extension = os.path.splitext(os.path.basename(old_file_path))
-
-            # 假设 new_saved_document 是新的 SavedDocument 实例
-            new_file_id = new_saved_document.pk  # 新文件的 ID
-            new_file_path = f'SavedDocument/{old_file_name}_{new_file_id}{old_file_extension}'
-
-            shutil.copy(old_file_path, new_file_path)
-            new_saved_document.sd_file.name = new_file_path
+        new_saved_document.sd_file = old_saved_document.sd_file
         new_saved_document.save()
         new_document.document_saves.add(new_saved_document)
     return new_document
