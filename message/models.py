@@ -43,6 +43,7 @@ class Notification(Model):
             "notification_create_time": self.notification_create_time.strftime("%Y-%m-%d %H:%M:%S"),
             "notification_creator": self.notification_creator.user_name,
             "notification_receiver": self.notification_receiver.user_id,
+            "notification_type": self.notification_type,
             "notification_checked": self.notification_checked,
             "notification_message": self.notification_message.cm_id if self.notification_message else None,
         }
